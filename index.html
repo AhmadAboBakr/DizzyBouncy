@@ -1,0 +1,136 @@
+<html>
+<head>
+    <title>Super Awesome Threejs</title>
+    <script src="js/three.js"></script>
+    <script src="fonts/helvetiker_bold.typeface.js"></script>
+    <script src="fonts/helvetiker_regular.typeface.js"></script>
+
+    <style>
+        body, html {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var three = THREE;
+
+        var scene = new three.Scene();
+
+        //Skybox
+        var skyboxImgs = ["images/purplenebula_front.jpg",
+        "images/purplenebula_back.jpg",
+        "images/purplenebula_left.jpg",
+        "images/purplenebula_right.jpg",
+        "images/purplenebula_top.jpg",
+        "images/purplenebula_top.jpg"];
+
+        var skyBoxGeo = new three.CubeGeometry(25, 25, 25, 1, 1, 1);
+        //var materials = [];
+        //for (var i = 0; i < 6; i++) {
+        //    var img = new three.ImageUtils.loadTexture(skyboxImgs[i]);
+        //    var mat = new three.MeshBasicMaterial({ map: img, side: three.BackSide });
+        //    materials.push(mat);
+        //    skyBoxGeo.faces[i].materialIndex = i;
+        //}
+        //var skyMaterial = new three.MeshFaceMaterial(materials);
+        //var skyMesh = new three.Mesh(skyBoxGeo, skyMaterial);
+        //scene.add(skyMesh);
+
+        var cubeMap = three.ImageUtils.loadTextureCube(skyboxImgs);
+        var shader = three.ShaderLib['cube'];
+        shader.uniforms['tCube'].value = cubeMap;
+        var skyBoxMaterial = new three.ShaderMaterial();
+        skyBoxMaterial.fragmentShader = shader.fragmentShader;
+        skyBoxMaterial.vertexShader = shader.vertexShader;
+        skyBoxMaterial.uniforms = shader.uniforms;
+        skyBoxMaterial.depthWrite = false;
+        skyBoxMaterial.side = THREE.BackSide;
+        var skyMesh = new THREE.Mesh(skyBoxGeo, skyBoxMaterial);
+
+        //var geometry = new three.CubeGeometry(1, 1, 1);
+        var geometry = new three.SphereGeometry(1, 40, 40, 0, Math.PI * 2, 0, Math.PI);
+        //var geometry = new three.CylinderGeometry(0.5, 1.5, 2, 60, 1, true);
+
+        //var geometry = new three.Geometry();
+        //geometry.vertices = [
+        //    new three.Vector3(0, 0, 0),
+        //    new three.Vector3(1, 0, 1),
+        //    new three.Vector3(1, 1, 1)
+        //];
+        //geometry.faces.push(new THREE.Face3(0, 1, 2));
+        //geometry.computeFaceNormals(); var geometry = new three.Geometry();
+
+        //var triangle = new three.Shape([
+        //    new three.Vector3(0, 0, 0),
+        //    new three.Vector3(1, 0, 1),
+        //    new three.Vector3(1, 1, 1)]);
+        //var geometry = new three.ExtrudeGeometry(triangle, { bevelEnabled: true, amount: 1 });
+
+        //var geometry = new three.TextGeometry("NaNaNa",
+        //    {
+        //        size: 0.6,
+        //        height: 1,
+        //        font: "helvetiker",
+        //        bevelEnabled: false,
+        //        weight: "normal"
+        //    });
+
+        var earthMap = new three.ImageUtils.loadTexture("images/earthmap.jpg");
+        var earthBumpMap = new three.ImageUtils.loadTexture("images/earthbump.jpg");
+        var earthSpecularMap = new three.ImageUtils.loadTexture("images/earthspec.jpg");
+
+        //var material = new three.MeshNormalMaterial();
+        //var material = new three.MeshDepthMaterial();
+        //var material = new three.MeshBasicMaterial({ color: 0xaa00aa, wireframe: true });
+        //var material = new three.MeshLambertMaterial({ color: 0xaa00aa, shading: three.FlatShading });
+        //var material = new three.MeshPhongMaterial({ color: 0xaa00aa, shading: three.SmoothShading, specular: 0x003300, shininess: 100 });
+
+        var material = new three.MeshPhongMaterial({ shading: three.SmoothShading, specular: 0x222222, shininess: 20 });
+        //material.map = earthMap;
+        //material.bumpMap = earthBumpMap;
+        //material.bumpScale = 0.05;
+        //material.specularMap = earthSpecularMap;
+        material.envMap = skyMesh;
+        material.combine = three.AddOperation;
+
+        //var material = new three.LineDashedMaterial({ color: 0xa0a7ae });
+        //material.side = three.DoubleSide;
+
+        var mesh = new three.Mesh(geometry, material);
+        //var mesh = new three.Line(geometry, material);
+
+        var renderer = new three.WebGLRenderer();
+        renderer.setSize(document.body.clientWidth, document.body.clientHeight);
+        document.body.appendChild(renderer.domElement);
+
+        var camera = new three.PerspectiveCamera(60, document.body.clientWidth / document.body.clientHeight, 1, 100);
+        camera.position.z = 2.8;
+
+        var light = new three.PointLight(0xffffff, 2.25, 10);
+        light.position.set(1, 2, 4);
+
+        scene.add(skyMesh);
+        scene.add(light);
+        scene.add(mesh);
+
+        animate();
+
+        //mesh.rotateZ(three.Math.degToRad(-45));
+        function animate() {
+            //mesh.rotation.x = Date.now() * 0.006;
+            //mesh.rotation.y = Date.now() * 0.001;
+            //mesh.rotation.z = Date.now() * 0.001;
+            mesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), 0.003);
+
+            skyMesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), -0.1);
+
+            renderer.render(scene, camera);
+
+            requestAnimationFrame(animate);
+        }
+
+    </script>
+</body>
+</html>
