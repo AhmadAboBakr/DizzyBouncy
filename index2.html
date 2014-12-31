@@ -1,0 +1,90 @@
+<html>
+<head>
+    <title>Super Awesome Threejs</title>
+    <script src="js/three.js"></script>
+    <script src="js/MarchingCubes.js"></script>
+    <script src="fonts/helvetiker_bold.typeface.js"></script>
+    <script src="fonts/helvetiker_regular.typeface.js"></script>
+
+    <style>
+        body, html {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var three = THREE;
+
+        var scene = new three.Scene();
+        var earthMap = new three.ImageUtils.loadTexture("images/earthspec.jpg");
+        var earthBumpMap = new three.ImageUtils.loadTexture("images/earthbump.jpg");
+        var earthSpecularMap = new three.ImageUtils.loadTexture("images/earthspec.jpg");
+
+        var geometry = new three.SphereGeometry(1, 40, 40, 0, Math.PI * 2, 0, Math.PI);
+        var material = new three.MeshPhongMaterial({ shading: three.SmoothShading, specular: 0x222222, shininess: 20 });
+        //material.map= earthMap;
+
+        
+        var mesh = new three.Mesh(geometry, material);
+        var mesh2 = new three.Mesh(geometry, material);
+
+        
+
+
+        var camera = new three.PerspectiveCamera(60, document.body.clientWidth / document.body.clientHeight, 1, 100);
+        camera.position.z = 2.8;
+        mesh2.position.x = mesh2.position.x - 4;
+        var light = new three.PointLight(0xffffff, 2.25, 10);
+        light.position.set(1, 2, 4);
+        scene.add(light);
+
+        resolution = 25;
+        numBlobs = 12;
+
+        effect = new THREE.MarchingCubes(resolution, material, true, true);
+        effect.position.set(0, 0, 0);
+
+        
+        scene.add(effect);
+
+        var renderer = new three.WebGLRenderer();
+        renderer.setSize(document.body.clientWidth, document.body.clientHeight);
+
+        renderer.setClearColor(0x050505, 1);
+        document.body.appendChild(renderer.domElement);
+        var balls = [{ x: .5, y: .5, z: .5 }, { x: 0.5, y: 0.5, z: 0.5 }];
+        var direction = 1;
+        console.log(balls);
+        animate();
+        function animate() {
+            effect.reset();
+
+            // fill the field with some metaballs
+
+            var i, ballx, bally, ballz, subtract, strength;
+
+            subtract = 12;
+            strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
+            for (var i = 0; i < balls.length; i++) {
+                effect.addBall(balls[i].x, balls[i].y, balls[i].z, 1, subtract);
+            }
+            effect.addBall(mesh2.position.x, mesh2.position.y, mesh2.position.z, strength, subtract);
+
+
+            effect.addPlaneY(2, 12);
+            effect.addPlaneX(2, 12);
+            if (balls[0].x > 0.9 || balls[0].x < .1) direction = -direction;
+            balls[0].x +=direction* 0.001;
+            balls[1].x += direction * 0.001;
+            balls[1].y += direction * 0.001;
+
+            renderer.render(scene, camera);
+
+            requestAnimationFrame(animate);
+        }
+
+    </script>
+</body>
+</html>
