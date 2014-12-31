@@ -2,6 +2,8 @@
 <head>
     <title>Super Awesome Threejs</title>
     <script src="js/three.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/physi.js"></script>
     <script src="fonts/helvetiker_bold.typeface.js"></script>
     <script src="fonts/helvetiker_regular.typeface.js"></script>
 
@@ -14,122 +16,138 @@
 </head>
 <body>
     <script>
+        Physijs.scripts.worker = 'js/physijs_worker.js';
+        Physijs.scripts.ammo = 'ammo.js';
+
         var three = THREE;
 
-        var scene = new three.Scene();
+        var render_stats = new Stats();
+        render_stats.domElement.style.position = 'absolute';
+        render_stats.domElement.style.top = '1px';
+        render_stats.domElement.style.zIndex = 100;
+        document.body.appendChild(render_stats.domElement);
 
-        //Skybox
-        var skyboxImgs = ["images/purplenebula_front.jpg",
-        "images/purplenebula_back.jpg",
-        "images/purplenebula_left.jpg",
-        "images/purplenebula_right.jpg",
-        "images/purplenebula_top.jpg",
-        "images/purplenebula_top.jpg"];
+        var physics_stats = new Stats();
+        physics_stats.domElement.style.position = 'absolute';
+        physics_stats.domElement.style.top = '50px';
+        physics_stats.domElement.style.zIndex = 100;
+        document.body.appendChild(physics_stats.domElement);
 
-        var skyBoxGeo = new three.CubeGeometry(25, 25, 25, 1, 1, 1);
-        //var materials = [];
-        //for (var i = 0; i < 6; i++) {
-        //    var img = new three.ImageUtils.loadTexture(skyboxImgs[i]);
-        //    var mat = new three.MeshBasicMaterial({ map: img, side: three.BackSide });
-        //    materials.push(mat);
-        //    skyBoxGeo.faces[i].materialIndex = i;
-        //}
-        //var skyMaterial = new three.MeshFaceMaterial(materials);
-        //var skyMesh = new three.Mesh(skyBoxGeo, skyMaterial);
-        //scene.add(skyMesh);
+        var scene = new Physijs.Scene;
+        scene.setGravity(new THREE.Vector3(0, -30, 0));
+        scene.addEventListener('update', update);
 
-        var cubeMap = three.ImageUtils.loadTextureCube(skyboxImgs);
-        var shader = three.ShaderLib['cube'];
-        shader.uniforms['tCube'].value = cubeMap;
-        var skyBoxMaterial = new three.ShaderMaterial();
-        skyBoxMaterial.fragmentShader = shader.fragmentShader;
-        skyBoxMaterial.vertexShader = shader.vertexShader;
-        skyBoxMaterial.uniforms = shader.uniforms;
-        skyBoxMaterial.depthWrite = false;
-        skyBoxMaterial.side = THREE.BackSide;
-        var skyMesh = new THREE.Mesh(skyBoxGeo, skyBoxMaterial);
-
-        //var geometry = new three.CubeGeometry(1, 1, 1);
-        var geometry = new three.SphereGeometry(1, 40, 40, 0, Math.PI * 2, 0, Math.PI);
-        //var geometry = new three.CylinderGeometry(0.5, 1.5, 2, 60, 1, true);
-
-        //var geometry = new three.Geometry();
-        //geometry.vertices = [
-        //    new three.Vector3(0, 0, 0),
-        //    new three.Vector3(1, 0, 1),
-        //    new three.Vector3(1, 1, 1)
-        //];
-        //geometry.faces.push(new THREE.Face3(0, 1, 2));
-        //geometry.computeFaceNormals(); var geometry = new three.Geometry();
-
-        //var triangle = new three.Shape([
-        //    new three.Vector3(0, 0, 0),
-        //    new three.Vector3(1, 0, 1),
-        //    new three.Vector3(1, 1, 1)]);
-        //var geometry = new three.ExtrudeGeometry(triangle, { bevelEnabled: true, amount: 1 });
-
-        //var geometry = new three.TextGeometry("NaNaNa",
-        //    {
-        //        size: 0.6,
-        //        height: 1,
-        //        font: "helvetiker",
-        //        bevelEnabled: false,
-        //        weight: "normal"
-        //    });
-
-        var earthMap = new three.ImageUtils.loadTexture("images/earthmap.jpg");
-        var earthBumpMap = new three.ImageUtils.loadTexture("images/earthbump.jpg");
-        var earthSpecularMap = new three.ImageUtils.loadTexture("images/earthspec.jpg");
-
-        //var material = new three.MeshNormalMaterial();
-        //var material = new three.MeshDepthMaterial();
-        //var material = new three.MeshBasicMaterial({ color: 0xaa00aa, wireframe: true });
-        //var material = new three.MeshLambertMaterial({ color: 0xaa00aa, shading: three.FlatShading });
-        //var material = new three.MeshPhongMaterial({ color: 0xaa00aa, shading: three.SmoothShading, specular: 0x003300, shininess: 100 });
-
-        var material = new three.MeshPhongMaterial({ shading: three.SmoothShading, specular: 0x222222, shininess: 20 });
-        //material.map = earthMap;
-        //material.bumpMap = earthBumpMap;
-        //material.bumpScale = 0.05;
-        //material.specularMap = earthSpecularMap;
-        material.envMap = skyMesh;
-        material.combine = three.AddOperation;
-
-        //var material = new three.LineDashedMaterial({ color: 0xa0a7ae });
-        //material.side = three.DoubleSide;
-
-        var mesh = new three.Mesh(geometry, material);
-        //var mesh = new three.Line(geometry, material);
-
-        var renderer = new three.WebGLRenderer();
-        renderer.setSize(document.body.clientWidth, document.body.clientHeight);
+        var renderer = new three.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
         document.body.appendChild(renderer.domElement);
 
-        var camera = new three.PerspectiveCamera(60, document.body.clientWidth / document.body.clientHeight, 1, 100);
-        camera.position.z = 2.8;
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(0, 50, 60);
+        camera.lookAt(scene.position);
 
-        var light = new three.PointLight(0xffffff, 2.25, 10);
-        light.position.set(1, 2, 4);
+        // Materials
+        ground_material = Physijs.createMaterial(
+			new THREE.MeshLambertMaterial({ color: 0xff0000 }),
+			.8, // high friction
+			.4 // low restitution
+		);
 
-        scene.add(skyMesh);
+        ball_material = Physijs.createMaterial(
+			new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
+			.4, // low friction
+			.6 // high restitution
+		);
+
+        // Meshes
+        var ground = new Physijs.BoxMesh(
+			new THREE.BoxGeometry(100, 5, 20),
+			ground_material,
+			0 // mass
+		);
+        ground.receiveShadow = true;
+
+        var ball = new Physijs.BoxMesh(
+				new THREE.IcosahedronGeometry(5, 4),
+				ball_material
+			);
+        ball.position.set(0, 10, 0);
+        ball.castShadow = true;
+
+        //ball.scale.set(
+        //    Math.random() * 1 + .5,
+        //    Math.random() * 1 + .5,
+        //    Math.random() * 1 + .5
+        //);
+
+        // Light
+        var light = new THREE.DirectionalLight(0xFFFFFF);
+        light.position.set(20, 40, -15);
+        light.target.position.copy(scene.position);
+        light.castShadow = true;
+        light.shadowCameraLeft = -60;
+        light.shadowCameraTop = -60;
+        light.shadowCameraRight = 60;
+        light.shadowCameraBottom = 60;
+        light.shadowCameraNear = 20;
+        light.shadowCameraFar = 200;
+        light.shadowBias = -.0001
+        light.shadowMapWidth = light.shadowMapHeight = 2048;
+        light.shadowDarkness = .7;
+
+        var ambient = new three.AmbientLight(0x111111);
+        ambient.intensity = 0.1;
+
+        scene.add(camera);
         scene.add(light);
-        scene.add(mesh);
+        scene.add(ambient);
+        scene.add(ground);
+        scene.add(ball);
 
-        animate();
+        requestAnimationFrame(render);
+        scene.simulate();
 
-        //mesh.rotateZ(three.Math.degToRad(-45));
-        function animate() {
-            //mesh.rotation.x = Date.now() * 0.006;
-            //mesh.rotation.y = Date.now() * 0.001;
-            //mesh.rotation.z = Date.now() * 0.001;
-            mesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), 0.003);
+        //scene.add(skyMesh);
+        //scene.add(mesh);
 
-            skyMesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), -0.1);
+        //animate();
 
+        //function animate() {
+        //    mesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), 0.003);
+
+        //    skyMesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), -0.1);
+
+        //    renderer.render(scene, camera);
+
+        //    requestAnimationFrame(animate);
+        //}
+
+        function update() {
+            //applyForce();
+            scene.simulate(undefined, 1);
+            physics_stats.update();
+        };
+
+
+        function render() {
+            requestAnimationFrame(render);
             renderer.render(scene, camera);
+            render_stats.update();
+        };
 
-            requestAnimationFrame(animate);
-        }
+        function applyForce(){
+            if (!mouse_position) return;
+            var strength = 35, distance, effect, offset, box;
+
+            for (var i = 0; i < boxes.length; i++) {
+                box = boxes[i];
+                distance = mouse_position.distanceTo(box.position),
+                effect = mouse_position.clone().sub(box.position).normalize().multiplyScalar(strength / distance).negate(),
+                offset = mouse_position.clone().sub(box.position);
+                box.applyImpulse(effect, offset);
+            }
+        };
 
     </script>
 </body>
