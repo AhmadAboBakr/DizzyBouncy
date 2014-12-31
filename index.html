@@ -18,22 +18,11 @@
     <script>
         Physijs.scripts.worker = 'js/physijs_worker.js';
         Physijs.scripts.ammo = 'ammo.js';
-
+        
         var three = THREE;
+        
 
-        var render_stats = new Stats();
-        render_stats.domElement.style.position = 'absolute';
-        render_stats.domElement.style.top = '1px';
-        render_stats.domElement.style.zIndex = 100;
-        document.body.appendChild(render_stats.domElement);
-
-        var physics_stats = new Stats();
-        physics_stats.domElement.style.position = 'absolute';
-        physics_stats.domElement.style.top = '50px';
-        physics_stats.domElement.style.zIndex = 100;
-        document.body.appendChild(physics_stats.domElement);
-
-        var scene = new Physijs.Scene;
+        var scene = new Physijs.Scene();
         scene.setGravity(new THREE.Vector3(0, -30, 0));
         scene.addEventListener('update', update);
 
@@ -68,12 +57,24 @@
 		);
         ground.receiveShadow = true;
 
-        var ball = new Physijs.BoxMesh(
+        var ballBase = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
-				ball_material
+				ball_material,
+                1000
 			);
-        ball.position.set(0, 10, 0);
-        ball.castShadow = true;
+        ballBase.position.set(0, 10, 0);
+        ballBase.castShadow = true;
+
+        var ballMid = new Physijs.SphereMesh(
+				new THREE.IcosahedronGeometry(5, 4),
+				ball_material,
+                0.1
+			);
+        ballMid.position.set(5, 15, 0);
+        ballMid.castShadow = true;
+
+        var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
+        //baseMidConstraint.setLimit(5, 5, 5);
 
         //ball.scale.set(
         //    Math.random() * 1 + .5,
@@ -103,7 +104,22 @@
         scene.add(light);
         scene.add(ambient);
         scene.add(ground);
-        scene.add(ball);
+        scene.add(ballBase);
+        scene.add(ballMid);
+
+        scene.addConstraint(baseMidConstraint, true);
+
+        var render_stats = new Stats();
+        render_stats.domElement.style.position = 'absolute';
+        render_stats.domElement.style.top = '1px';
+        render_stats.domElement.style.zIndex = 100;
+        document.body.appendChild(render_stats.domElement);
+
+        var physics_stats = new Stats();
+        physics_stats.domElement.style.position = 'absolute';
+        physics_stats.domElement.style.top = '50px';
+        physics_stats.domElement.style.zIndex = 100;
+        document.body.appendChild(physics_stats.domElement);
 
         requestAnimationFrame(render);
         scene.simulate();
