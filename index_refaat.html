@@ -314,15 +314,16 @@
         Physijs.scripts.ammo = 'ammo.js';
 
         var three = THREE;
+        document.onkeydown = keyHandler;
 
         ////////////////////////////
         ///Marching algo init
         ////////////////////////////
         var axisMin = -2;
-        var axisMax = 8;
+        var axisMax = 7;
         var axisRange = axisMax - axisMin;
 
-        var size = 25;
+        var size = 36;
         var size2 = size * size;
         var size3 = size * size * size;
 
@@ -348,7 +349,7 @@
         ////////////////////////////
 
         var scene = new Physijs.Scene();
-        scene.setGravity(new THREE.Vector3(0, -30, 0));
+        scene.setGravity(new THREE.Vector3(0, -98, 0));
         scene.addEventListener('update', update);
 
         var renderer = new three.WebGLRenderer({ antialias: true });
@@ -412,7 +413,6 @@
 
         var ballMid = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
-                //marchingCubes( points, values, 0.5 ),
 				ball_material,
                 0.1
 			);
@@ -426,29 +426,10 @@
         addBall(points, values, new THREE.Vector3(0, 3, 0));
 
         var meatBallsMesh = new three.Mesh(marchingCubes(points, values, 0.7), ball_material);
-        //var meatBallsMesh = new Physijs.SphereMesh(
-        //		marchingCubes(points, values, 0.5),
-        //		ball_material,
-        //        0
-        //	);
         meatBallsMesh.position.set(10, 10, 0);
         meatBallsMesh.castShadow = true;
         meatBallsMesh.scale.set(3, 3, 3);
         refractSphereCamera.position = meatBallsMesh.position;
-
-        //var meatBallsMesh = new Physijs.SphereMesh(
-        //        marchingCubes( points, values, 0.5 ),
-        //		ball_material,
-        //        0.1
-        //	);
-        //meatBallsMesh.position.set(15, 15, 0);
-
-        //ball.scale.set(
-        //    Math.random() * 1 + .5,
-        //    Math.random() * 1 + .5,
-        //    Math.random() * 1 + .5
-        //);
-
 
         // Light
         var light = new THREE.DirectionalLight(0xFFFFFF);
@@ -565,6 +546,17 @@
                 box.applyImpulse(effect, offset);
             }
         };
+
+        function keyHandler(e) {
+            console.log("Key: " + e.keyCode);
+
+            switch (e.keyCode)
+            {
+                case 32:
+                    ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+                    break;
+            }
+        }
 
 
         // METABALLS FUNCTIONS
