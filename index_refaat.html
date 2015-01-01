@@ -318,11 +318,11 @@
         ////////////////////////////
         ///Marching algo init
         ////////////////////////////
-        var axisMin = -5;
-        var axisMax = 5;
+        var axisMin = -2;
+        var axisMax = 8;
         var axisRange = axisMax - axisMin;
 
-        var size = 20;
+        var size = 25;
         var size2 = size * size;
         var size3 = size * size * size;
 
@@ -361,6 +361,11 @@
         camera.position.set(0, 50, 60);
         camera.lookAt(scene.position);
 
+        //Jelly effect !
+        var refractSphereCamera = new THREE.CubeCamera(0.1, 1000, 512);
+        refractSphereCamera.renderTarget.mapping = new THREE.CubeRefractionMapping();
+        refractSphereCamera.rotation = camera.rotation;
+        refractSphereCamera.rotateX(three.Math.degToRad(38));
         // Materials
         ground_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ color: 0xff0000 }),
@@ -369,7 +374,14 @@
 		);
 
         ball_material = Physijs.createMaterial(
-			new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
+			new THREE.MeshLambertMaterial({
+			    transparent: true,
+			    opacity: 0.85,
+			    color: 0xaaffaa,
+			    envMap: refractSphereCamera.renderTarget,
+			    refractionRatio: 0.97,
+			    reflectivity: 0.8
+			}),
 			.4, // low friction
 			.6 // high restitution
 		);
@@ -381,6 +393,14 @@
 			0 // mass
 		);
         ground.receiveShadow = true;
+
+        var platform = new Physijs.BoxMesh(
+			new THREE.BoxGeometry(100, 5, 20),
+			ground_material,
+			0.01 // mass
+		);
+        platform.receiveShadow = true;
+        platform.translateZ(-30);
 
         var ballBase = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
@@ -402,24 +422,25 @@
         var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
         //baseMidConstraint.setLimit(5, 5, 5);
 
-        addBall(points, values, new THREE.Vector3(0,0,0));
-        addBall(points, values, new THREE.Vector3(0,3,0));
+        addBall(points, values, new THREE.Vector3(0, 0, 0));
+        addBall(points, values, new THREE.Vector3(0, 3, 0));
 
         var meatBallsMesh = new three.Mesh(marchingCubes(points, values, 0.7), ball_material);
         //var meatBallsMesh = new Physijs.SphereMesh(
-		//		marchingCubes(points, values, 0.5),
-		//		ball_material,
+        //		marchingCubes(points, values, 0.5),
+        //		ball_material,
         //        0
-		//	);
+        //	);
         meatBallsMesh.position.set(10, 10, 0);
         meatBallsMesh.castShadow = true;
         meatBallsMesh.scale.set(3, 3, 3);
+        refractSphereCamera.position = meatBallsMesh.position;
 
         //var meatBallsMesh = new Physijs.SphereMesh(
         //        marchingCubes( points, values, 0.5 ),
-		//		ball_material,
+        //		ball_material,
         //        0.1
-		//	);
+        //	);
         //meatBallsMesh.position.set(15, 15, 0);
 
         //ball.scale.set(
@@ -431,7 +452,7 @@
 
         // Light
         var light = new THREE.DirectionalLight(0xFFFFFF);
-        light.position.set(20, 40, -15);
+        light.position.set(20, 40, 15);
         light.target.position.copy(scene.position);
         light.castShadow = true;
         light.shadowCameraLeft = -60;
@@ -444,17 +465,17 @@
         light.shadowMapWidth = light.shadowMapHeight = 2048;
         light.shadowDarkness = .7;
 
-        var ambient = new three.AmbientLight(0x111111);
-        ambient.intensity = 0.1;
-
+        var ambient = new three.AmbientLight(0x222222);
 
         scene.add(camera);
         scene.add(light);
         scene.add(ambient);
         scene.add(ground);
+        scene.add(platform);
         scene.add(ballBase);
         scene.add(ballMid);
         scene.add(meatBallsMesh);
+        scene.add(refractSphereCamera);
 
         scene.add(new THREE.AxisHelper(axisMax));
 
@@ -490,9 +511,9 @@
         function update() {
             //applyForce();
 
+
             scene.simulate(undefined, 1);
             physics_stats.update();
-
 
             //resetValues(values);
             //addBall(points, values, new THREE.Vector3(ballBase.position.x + 10, ballBase.position.y, ballBase.position.z));
@@ -513,15 +534,20 @@
 
             resetValues(values);
 
-            addBall(points, values, new THREE.Vector3(ballBase.position.x / 4, ballBase.position.y / 5, ballBase.position.z));
-            addBall(points, values, new THREE.Vector3(0, 0, 0));
-            addBall(points, values, new THREE.Vector3(ballMid.position.x / 4, ballMid.position.y / 5, ballMid.position.z));
+            addBall(points, values, new THREE.Vector3(ballBase.position.x / 4, ballBase.position.y / 4, ballBase.position.z));
+            //addBall(points, values, new THREE.Vector3(0, 0, 0));
+            addBall(points, values, new THREE.Vector3(ballMid.position.x / 4, ballMid.position.y / 4, ballMid.position.z));
 
             meatBallsMesh = new THREE.Mesh(marchingCubes(points, values, 0.5), ball_material);
-            meatBallsMesh.position.set(15, 8, 0);
+            meatBallsMesh.position.set(15, 0, 0);
             meatBallsMesh.castShadow = true;
             meatBallsMesh.scale.set(4, 4, 4);
             scene.add(meatBallsMesh);
+
+
+            meatBallsMesh.visible = false;
+            refractSphereCamera.updateCubeMap(renderer, scene);
+            meatBallsMesh.visible = true;
 
             renderer.render(scene, camera);
             render_stats.update();
