@@ -552,38 +552,33 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 	};
 
 	this.addPlaneY = function( strength, subtract ) {
+
 		var x, y, z, yy, val, ydiv, cy, cxy,
 
 			// cache attribute lookups
 			size = this.size,
-            size = size;
 			yd = this.yd,
 			zd = this.zd,
 			field = this.field,
 
-			dist = size * Math.sqrt( strength / subtract );
-
+			dist = size * Math.sqrt(strength / subtract);
 		if ( dist > size ) dist = size;
 
 		for ( y = 0; y < dist; y ++ ) {
 
 			ydiv = y / size;
 			yy = ydiv * ydiv;
-			val = strength / ( 0.0001 + yy ) - subtract;
+			val = strength / ( 0.001 + yy ) - subtract;
 
 			if ( val > 0.0 ) {
 
 				cy = y * yd;
 
 				for ( x = 0; x < size; x ++ ) {
-
 					cxy = cy + x;
-
 					for ( z = 0; z < size; z ++ )
-						field[ zd * z + cxy ] += val * 2;
-
+						field[ zd * z + cxy ] += val;
 				}
-
 			}
 
 		}
@@ -608,7 +603,7 @@ THREE.MarchingCubes = function ( resolution, material, enableUvs, enableColors )
 
 			zdiv = z / size;
 			zz = zdiv * zdiv;
-			val = strength / ( 0.0001 + zz ) - subtract;
+			val = strength / ( 0.01 + zz ) - subtract;
 			if ( val > 0.0 ) {
 
 				cz = zd * z;

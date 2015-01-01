@@ -406,17 +406,18 @@
         var ballBase = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
 				ball_material,
-                1000
+                100
 			);
         ballBase.position.set(0, 10, 0);
         ballBase.castShadow = true;
+        ballBase.rot
 
         var ballMid = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
 				ball_material,
-                0.1
+                1
 			);
-        ballMid.position.set(5, 15, 0);
+        ballMid.position.set(1, 21, 0);
         ballMid.castShadow = true;
 
         addBall(points, values, new THREE.Vector3(0, 0, 0));
@@ -457,17 +458,36 @@
 
         scene.add(new THREE.AxisHelper(axisMax));
 
-        scene.addConstraint(baseMidConstraint, false);
 
         //Configure contraints
 
         var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 14.9, 0));
+        scene.addConstraint(baseMidConstraint, true);
         var hazza = three.Math.degToRad(10);
+        baseMidConstraint.axisa = new three.Vector3(0, 1, 0);
+        baseMidConstraint.axisb = new three.Vector3(1, 0, 0);
         baseMidConstraint.setLimit(hazza, hazza, hazza); // rotational limit, in radians, for each axis
-        baseMidConstraint.setMotorMaxImpulse(10); // float value of the maximum impulse the motor can apply toward its target
-        baseMidConstraint.setMotorTarget(new THREE.Vector3(0, 0, 0)); // target is the desired rotation for the constraint and can be expressed by a THREE.Vector3, THREE.Matrix4, or THREE.Quaternion
-        baseMidConstraint.enableMotor();
-        //baseMidConstraint.disableMotor();
+        //baseMidConstraint.setMotorMaxImpulse(10); // float value of the maximum impulse the motor can apply toward its target
+        baseMidConstraint.setMaxMotorImpulse(0.001);
+        //baseMidConstraint.enableMotor();
+        //var targetAngle = -10;
+        //var motorEnabled = true;
+        //baseMidConstraint.setMotorTarget(new THREE.Vector3(0, 0, three.Math.degToRad(targetAngle))); // target is the desired rotation for the constraint and can be expressed by a THREE.Vector3, THREE.Matrix4, or THREE.Quaternion
+
+        //setInterval(function () {
+        //    targetAngle = -targetAngle;
+        //    baseMidConstraint.setMotorTarget(new THREE.Vector3(0, 0, three.Math.degToRad(targetAngle))); // target is the desired rotation for the constraint and can be expressed by a THREE.Vector3, THREE.Matrix4, or THREE.Quaternion
+        //}, 500);
+
+        //setInterval(function () {
+        //    motorEnabled = !motorEnabled;
+        //    if (motorEnabled)
+        //        baseMidConstraint.enableMotor();
+        //    else
+        //        baseMidConstraint.disableMotor();
+        //}, 1000);
+
+        baseMidConstraint.disableMotor();
 
 
         var render_stats = new Stats();
@@ -500,6 +520,7 @@
         function update() {
             //applyForce();
 
+            ballBase.rotation.set(0, 0, 0);
 
             scene.simulate(undefined, 1);
             physics_stats.update();
