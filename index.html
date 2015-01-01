@@ -30,7 +30,6 @@
         }
 
     </script>
-
     <script type="x-shader/x-vertex" id="fragmentShader">
 
         uniform sampler2D textureMap;
@@ -106,6 +105,42 @@
         }
 
     </script>
+    
+    <script type="x-shader/x-vertex" id="sphere-vs">
+
+        void main() {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+        }
+
+    </script>
+    <script type="x-shader/x-vertex" id="sphere-fs">
+
+        uniform vec2 resolution;
+        uniform float noise;
+        uniform vec3 color;
+
+        #define VIG_REDUCTION_POWER 1.
+        #define VIG_BOOST 1.
+
+        float random(vec3 scale,float seed){return fract(sin(dot(gl_FragCoord.xyz+seed,scale))*43758.5453+seed);}
+
+        void main() {
+
+        vec2 center = resolution * 0.5;
+        float vignette = distance( center, gl_FragCoord.xy ) / resolution.x;
+        vignette = VIG_BOOST - vignette * VIG_REDUCTION_POWER;
+
+        float n = noise * ( .5 - random( vec3( 1. ), length( gl_FragCoord ) ) );
+
+        float v = .5 * length( vec2( gl_FragCoord.y / resolution.y, ( 1. - abs( .5 - gl_FragCoord.x / resolution.x ) ) ) );
+        vec3 base = color;
+        base += vec3( pow( v, 2. ) );
+        gl_FragColor = vec4( base * vec3( vignette ) + vec3( n ), 1. );
+
+        }
+
+    </script>
+
 
     <style>
         body, html {
@@ -135,13 +170,9 @@
 
         document.body.appendChild(renderer.domElement);
 
-        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
         camera.position.set(0, 40, 40);
         camera.lookAt(scene.position);
-        var refractSphereCamera = new THREE.CubeCamera(0.1, 1000, 512);
-        refractSphereCamera.renderTarget.mapping = new THREE.CubeRefractionMapping();
-        refractSphereCamera.rotation = camera.rotation;
-        refractSphereCamera.rotateX(three.Math.degToRad(38));
         // Materials
         ground_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ color: 0xff0000 }),
@@ -152,9 +183,7 @@
         ball_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({
 			    transparent: true,
-			    opacity: 0.85,
 			    color: 0xaaffaa,
-			    envMap: refractSphereCamera.renderTarget,
 			    refractionRatio: 0.97,
 			    reflectivity: 0.8
 			}),
@@ -189,13 +218,6 @@
         ballMid.castShadow = true;
 
         var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
-        //baseMidConstraint.setLimit(5, 5, 5);
-
-        //ball.scale.set(
-        //    Math.random() * 1 + .5,
-        //    Math.random() * 1 + .5,
-        //    Math.random() * 1 + .5
-        //);
 
         // Light
         var light = new THREE.DirectionalLight(0xFFFFFF);
@@ -276,20 +298,25 @@
         requestAnimationFrame(render);
         scene.simulate();
 
-        //scene.add(skyMesh);
-        //scene.add(mesh);
+        //sky sphere
+        sphereMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
+                noise: { type: 'f', value: .04 },
+                color: { type: 'c', value: new THREE.Color(0, 0, 0) }
+            },
+            vertexShader: document.getElementById('sphere-vs').textContent,
+            fragmentShader: document.getElementById('sphere-fs').textContent,
+            side: THREE.DoubleSide
 
-        //animate();
+        });
+        sphereMaterial.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
+        sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
 
-        //function animate() {
-        //    mesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), 0.003);
+        var sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
+        scene2.add(sphere);
 
-        //    skyMesh.rotateOnAxis((new three.Vector3(1, 1, 0)).normalize(), -0.1);
-
-        //    renderer.render(scene, camera);
-
-        //    requestAnimationFrame(animate);
-        //}
+        ///
 
         function update() {
             //applyForce();
@@ -300,6 +327,8 @@
         };
 
         function render() {
+            ballBase.rotation.set(0, 0, 0);
+
             requestAnimationFrame(render);
             effect.reset();
             strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
@@ -334,6 +363,13 @@
                 box.applyImpulse(effect, offset);
             }
         };
+        function jumb() {
+            ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+                    
+        }
+        setTimeout(function () {
+            setInterval(jumb, 2200);
+        }, 2000);
 
     </script>
 </body>
