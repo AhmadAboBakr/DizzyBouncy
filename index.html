@@ -36,19 +36,30 @@
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
         camera.position.set(0, 40, 40);
         camera.lookAt(scene.position);
-
+        var refractSphereCamera = new THREE.CubeCamera(0.1, 1000, 512);
+        refractSphereCamera.renderTarget.mapping = new THREE.CubeRefractionMapping();
+        refractSphereCamera.rotation = camera.rotation;
+        refractSphereCamera.rotateX(three.Math.degToRad(38));
         // Materials
         ground_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ color: 0xff0000 }),
 			.8, // high friction
-			1 // low restitution
+			.4 // low restitution
 		);
 
         ball_material = Physijs.createMaterial(
-			new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
-			0, // low friction
-			1// high restitution
+			new THREE.MeshLambertMaterial({
+			    transparent: true,
+			    opacity: 0.85,
+			    color: 0xaaffaa,
+			    envMap: refractSphereCamera.renderTarget,
+			    refractionRatio: 0.97,
+			    reflectivity: 0.8
+			}),
+			.4, // low friction
+			.6 // high restitution
 		);
+
 
         // Meshes
         var ground = new Physijs.BoxMesh(
@@ -170,13 +181,13 @@
             ballPosition.x = (ballPosition.x + 1) / 2;
             ballPosition.y = (ballPosition.y + 1) / 2;
             ballPosition.z = (ballPosition.z + 1) / 2;
-            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, strength, 12);
+            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, 1.2, 12);
             ballPosition = new three.Vector3(ballMid.position.x, ballMid.position.y, ballMid.position.z);
             effect.worldToLocal(ballPosition);
             ballPosition.x = (ballPosition.x + 1) / 2;
             ballPosition.y = (ballPosition.y + 1) / 2;
             ballPosition.z = (ballPosition.z + 1) / 2;
-            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, strength, 12);
+            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, .6, 12);
 
             renderer.render(scene2, camera);
 
