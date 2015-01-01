@@ -419,9 +419,6 @@
         ballMid.position.set(5, 15, 0);
         ballMid.castShadow = true;
 
-        var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
-        //baseMidConstraint.setLimit(5, 5, 5);
-
         addBall(points, values, new THREE.Vector3(0, 0, 0));
         addBall(points, values, new THREE.Vector3(0, 3, 0));
 
@@ -460,7 +457,18 @@
 
         scene.add(new THREE.AxisHelper(axisMax));
 
-        scene.addConstraint(baseMidConstraint, true);
+        scene.addConstraint(baseMidConstraint, false);
+
+        //Configure contraints
+
+        var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 14.9, 0));
+        var hazza = three.Math.degToRad(10);
+        baseMidConstraint.setLimit(hazza, hazza, hazza); // rotational limit, in radians, for each axis
+        baseMidConstraint.setMotorMaxImpulse(10); // float value of the maximum impulse the motor can apply toward its target
+        baseMidConstraint.setMotorTarget(new THREE.Vector3(0, 0, 0)); // target is the desired rotation for the constraint and can be expressed by a THREE.Vector3, THREE.Matrix4, or THREE.Quaternion
+        baseMidConstraint.enableMotor();
+        //baseMidConstraint.disableMotor();
+
 
         var render_stats = new Stats();
         render_stats.domElement.style.position = 'absolute';
@@ -550,8 +558,7 @@
         function keyHandler(e) {
             console.log("Key: " + e.keyCode);
 
-            switch (e.keyCode)
-            {
+            switch (e.keyCode) {
                 case 32:
                     ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
                     break;
