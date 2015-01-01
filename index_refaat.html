@@ -322,7 +322,7 @@
         var axisMax = 5;
         var axisRange = axisMax - axisMin;
 
-        var size = 50;
+        var size = 20;
         var size2 = size * size;
         var size3 = size * size * size;
 
@@ -490,31 +490,6 @@
         function update() {
             //applyForce();
 
-
-            scene.remove(meatBallsMesh);
-
-            resetValues(values);
-            //addBall(points, values, new THREE.Vector3(0, 0, 0));
-            //addBall(points, values, new THREE.Vector3(0, 3, 0));
-
-
-            addBall(points, values, new THREE.Vector3(ballBase.position.x/4, ballBase.position.y/5, ballBase.position.z));
-            addBall(points, values, new THREE.Vector3(0, 0, 0));
-            addBall(points, values, new THREE.Vector3(ballMid.position.x/4, ballMid.position.y/5, ballMid.position.z));
-
-            console.log(Math.floor(ballBase.position.x), Math.floor(ballBase.position.y + 5), Math.floor(ballBase.position.z));
-            //var meatBallsMesh = new Physijs.SphereMesh(
-            //	marchingCubes(points, values, 0.5),
-            //	ball_material,
-            //    0
-            //);
-
-            meatBallsMesh = new THREE.Mesh(marchingCubes(points, values, 0.5), ball_material);
-            meatBallsMesh.position.set(15, 8, 0);
-            meatBallsMesh.castShadow = true;
-            meatBallsMesh.scale.set(4, 4, 4);
-            scene.add(meatBallsMesh);
-
             scene.simulate(undefined, 1);
             physics_stats.update();
 
@@ -533,6 +508,20 @@
 
         function render() {
             requestAnimationFrame(render);
+
+            scene.remove(meatBallsMesh);
+
+            resetValues(values);
+
+            addBall(points, values, new THREE.Vector3(ballBase.position.x / 4, ballBase.position.y / 5, ballBase.position.z));
+            addBall(points, values, new THREE.Vector3(0, 0, 0));
+            addBall(points, values, new THREE.Vector3(ballMid.position.x / 4, ballMid.position.y / 5, ballMid.position.z));
+
+            meatBallsMesh = new THREE.Mesh(marchingCubes(points, values, 0.5), ball_material);
+            meatBallsMesh.position.set(15, 8, 0);
+            meatBallsMesh.castShadow = true;
+            meatBallsMesh.scale.set(4, 4, 4);
+            scene.add(meatBallsMesh);
 
             renderer.render(scene, camera);
             render_stats.update();
