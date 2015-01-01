@@ -6,7 +6,7 @@
     <script src="js/physi.js"></script>
     <script src="fonts/helvetiker_bold.typeface.js"></script>
     <script src="fonts/helvetiker_regular.typeface.js"></script>
-
+    <script src="js/MarchingCubes.js"></script>
     <style>
         body, html {
             padding: 0;
@@ -20,33 +20,34 @@
         Physijs.scripts.ammo = 'ammo.js';
         
         var three = THREE;
-        
+        var effect;
 
         var scene = new Physijs.Scene();
         scene.setGravity(new THREE.Vector3(0, -30, 0));
         scene.addEventListener('update', update);
-
+        var scene2 = new THREE.Scene();
         var renderer = new three.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
         renderer.shadowMapSoft = true;
+        
         document.body.appendChild(renderer.domElement);
 
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.set(0, 50, 60);
+        camera.position.set(0, 40, 40);
         camera.lookAt(scene.position);
 
         // Materials
         ground_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ color: 0xff0000 }),
 			.8, // high friction
-			.4 // low restitution
+			1 // low restitution
 		);
 
         ball_material = Physijs.createMaterial(
 			new THREE.MeshLambertMaterial({ color: 0x00ff00 }),
-			.4, // low friction
-			.6 // high restitution
+			0, // low friction
+			1// high restitution
 		);
 
         // Meshes
@@ -55,6 +56,7 @@
 			ground_material,
 			0 // mass
 		);
+        ground.position.y = -15;
         ground.receiveShadow = true;
 
         var ballBase = new Physijs.SphereMesh(
@@ -62,7 +64,7 @@
 				ball_material,
                 1000
 			);
-        ballBase.position.set(0, 10, 0);
+        ballBase.position.set(0, 10,0);
         ballBase.castShadow = true;
 
         var ballMid = new Physijs.SphereMesh(
@@ -107,6 +109,17 @@
         scene.add(ballBase);
         scene.add(ballMid);
 
+        resolution = 30;
+        //effect
+        effect = new THREE.MarchingCubes(resolution, ball_material, true, true);
+        effect.position.set(0, 0, 0);
+        effect.scale.set(20, 20, 20);
+        
+        scene2.add(effect);
+        scene2.add(camera);
+        scene2.add(light);
+
+        //endeffect
         scene.addConstraint(baseMidConstraint, true);
 
         var render_stats = new Stats();
@@ -143,13 +156,30 @@
             //applyForce();
             scene.simulate(undefined, 1);
             physics_stats.update();
+            
+
         };
-
-
+        
         function render() {
             requestAnimationFrame(render);
+            effect.reset();
+            strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
+            effect.addPlaneY(3, 12);
+            var ballPosition = new three.Vector3(ballBase.position.x , ballBase.position.y, ballBase.position.z);
+            effect.worldToLocal(ballPosition);
+            ballPosition.x = (ballPosition.x + 1) / 2;
+            ballPosition.y = (ballPosition.y + 1) / 2;
+            ballPosition.z = (ballPosition.z + 1) / 2;
+            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, strength, 12);
+            ballPosition = new three.Vector3(ballMid.position.x, ballMid.position.y, ballMid.position.z);
+            effect.worldToLocal(ballPosition);
+            ballPosition.x = (ballPosition.x + 1) / 2;
+            ballPosition.y = (ballPosition.y + 1) / 2;
+            ballPosition.z = (ballPosition.z + 1) / 2;
+            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, strength, 12);
 
-            renderer.render(scene, camera);
+            renderer.render(scene2, camera);
+
             render_stats.update();
         };
 
