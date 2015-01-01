@@ -498,9 +498,9 @@
             //addBall(points, values, new THREE.Vector3(0, 3, 0));
 
 
-            addBall(points, values, new THREE.Vector3(Math.floor(ballBase.position.x)/4, Math.floor(ballBase.position.y)/5, Math.floor(ballBase.position.z)));
+            addBall(points, values, new THREE.Vector3(ballBase.position.x/4, ballBase.position.y/5, ballBase.position.z));
             addBall(points, values, new THREE.Vector3(0, 0, 0));
-            addBall(points, values, new THREE.Vector3(Math.floor(ballMid.position.x)/4, Math.floor(ballMid.position.y)/5, Math.floor(ballMid.position.z)));
+            addBall(points, values, new THREE.Vector3(ballMid.position.x/4, ballMid.position.y/5, ballMid.position.z));
 
             console.log(Math.floor(ballBase.position.x), Math.floor(ballBase.position.y + 5), Math.floor(ballBase.position.z));
             //var meatBallsMesh = new Physijs.SphereMesh(
