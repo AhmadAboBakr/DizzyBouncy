@@ -1,7 +1,6 @@
-
 <html>
 <head>
-    <title>Poinky Test1</title>
+    <title>Super Awesome Threejs</title>
     <script src="js/three.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/physi.js"></script>
@@ -106,7 +105,7 @@
         }
 
     </script>
-
+    
     <script type="x-shader/x-vertex" id="sphere-vs">
 
         void main() {
@@ -363,14 +362,16 @@
                 box.applyImpulse(effect, offset);
             }
         };
-        function jumb() {
-            ballBase.rotation.set(0, 0, 0);
-
-            ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+        var y = ballBase.position.y;
+        function jump() {
+            if (y == ballBase.position.y) {
+                ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+            }
+            y = ballBase.position.y;
         }
-        setTimeout(function () {
-            setInterval(jumb, 2200);
 
+        setTimeout(function () {
+            setInterval(jump, 100);
         }, 2000);
 
     </script>
