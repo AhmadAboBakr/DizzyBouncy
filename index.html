@@ -1,6 +1,7 @@
+
 <html>
 <head>
-    <title>Super Awesome Threejs</title>
+    <title>Poinky Test1</title>
     <script src="js/three.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/physi.js"></script>
@@ -105,7 +106,7 @@
         }
 
     </script>
-    
+
     <script type="x-shader/x-vertex" id="sphere-vs">
 
         void main() {
@@ -204,7 +205,7 @@
         var ballBase = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
 				ball_material,
-                2
+                1000
 			);
         ballBase.position.set(0, 10, 0);
         ballBase.castShadow = true;
@@ -212,7 +213,7 @@
         var ballMid = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
 				ball_material,
-                1
+                0.1
 			);
         ballMid.position.set(5, 15, 0);
         ballMid.castShadow = true;
@@ -328,7 +329,6 @@
 
         function render() {
             ballBase.rotation.set(0, 0, 0);
-
             requestAnimationFrame(render);
             effect.reset();
             strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
@@ -364,11 +364,13 @@
             }
         };
         function jumb() {
+            ballBase.rotation.set(0, 0, 0);
+
             ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
-                    
         }
         setTimeout(function () {
             setInterval(jumb, 2200);
+
         }, 2000);
 
     </script>
