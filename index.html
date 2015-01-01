@@ -328,7 +328,6 @@
 
         function render() {
             ballBase.rotation.set(0, 0, 0);
-
             requestAnimationFrame(render);
             effect.reset();
             strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
@@ -363,12 +362,16 @@
                 box.applyImpulse(effect, offset);
             }
         };
-        function jumb() {
-            ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
-                    
+        var y = ballBase.position.y;
+        function jump() {
+            if (y == ballBase.position.y) {
+                ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+            }
+            y = ballBase.position.y;
         }
+
         setTimeout(function () {
-            setInterval(jumb, 2200);
+            setInterval(jump, 100);
         }, 2000);
 
     </script>
