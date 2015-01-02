@@ -1,6 +1,7 @@
+
 <html>
 <head>
-    <title>Super Awesome Threejs</title>
+    <title>Poinky Test1</title>
     <script src="js/three.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/physi.js"></script>
@@ -105,7 +106,7 @@
         }
 
     </script>
-    
+
     <script type="x-shader/x-vertex" id="sphere-vs">
 
         void main() {
@@ -160,7 +161,7 @@
         var effect;
 
         var scene = new Physijs.Scene();
-        scene.setGravity(new THREE.Vector3(0, -30, 0));
+        scene.setGravity(new THREE.Vector3(0, -98, 0));
         scene.addEventListener('update', update);
         var scene2 = new THREE.Scene();
         var renderer = new three.WebGLRenderer({ antialias: true });
@@ -188,7 +189,7 @@
 			    reflectivity: 0.8
 			}),
 			.4, // low friction
-			.6 // high restitution
+			.8 // high restitution
 		);
 
 
@@ -206,18 +207,16 @@
 				ball_material,
                 1000
 			);
-        ballBase.position.set(0, 10, 0);
+        ballBase.position.set(-5, 10, 0);
         ballBase.castShadow = true;
 
         var ballMid = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
 				ball_material,
-                0.1
+                1
 			);
-        ballMid.position.set(5, 15, 0);
+        ballMid.position.set(-5, 19.9, 0);
         ballMid.castShadow = true;
-
-        var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
 
         // Light
         var light = new THREE.DirectionalLight(0xFFFFFF);
@@ -259,29 +258,48 @@
             },
             vertexShader: document.getElementById('vertexShader').textContent,
             fragmentShader: document.getElementById('fragmentShader').textContent,
-            side: THREE.DoubleSide
+            side: THREE.FrontSide
 
         });
         material.uniforms.normalScale.value = .5;
         material.uniforms.texScale.value = 10;
         material.uniforms.useSSS.value = .15;
         material.uniforms.useScreen.value = 0;
+
+        material.uniforms.color.value.setRGB(80. / 255., 72. / 255., 85. / 255.);
+
         material.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
-        //material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('723-normal.jpg');
-        material.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
+        material.uniforms.textureMap.value.wrapS = material.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
+
+        //remove to get the old effect
+        material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('ice-snow.jpg');
+        material.uniforms.normalMap.value.wrapS = material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+        //end remove to get the old effect
 
         resolution = 50;
 
         effect = new THREE.MarchingCubes(resolution, material, true, true);
         effect.position.set(0, 0, 0);
         effect.scale.set(20, 20, 20);
+        effect.isolation = 60;
 
         scene2.add(effect);
         scene2.add(camera);
         scene2.add(light);
+        scene2.add(ambient);
+
 
         //endeffect
+        var baseMidConstraint = new Physijs.HingeConstraint(ballBase, ballMid, new THREE.Vector3(-5, 14.9, 0), new THREE.Vector3(0, 0, 1));
         scene.addConstraint(baseMidConstraint, true);
+        var hazza = three.Math.degToRad(8);
+        baseMidConstraint.setLimits(-hazza, hazza, null, 0.4);
+
+        baseMidConstraint.enableAngularMotor(2, 0.5);
+        setTimeout(function () {
+            console.log(baseMidConstraint);
+            baseMidConstraint.enableAngularMotor(0, 0);
+        }, 5000);
 
         var render_stats = new Stats();
         render_stats.domElement.style.position = 'absolute';
@@ -312,66 +330,65 @@
         });
         sphereMaterial.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
         sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-
+        var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
+        horizon.position.y = -12;
         var sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
         scene2.add(sphere);
-
+        var ground2 = ground.clone();
+        scene2.add(ground2);
+        scene2.add(horizon);
         ///
 
         function update() {
             //applyForce();
+
+            ballBase.setAngularVelocity(new three.Vector3(0, 0, 0));
+
             scene.simulate(undefined, 1);
             physics_stats.update();
-
-
         };
 
         function render() {
+            ground2.position = ground.position;
             ballBase.rotation.set(0, 0, 0);
             requestAnimationFrame(render);
             effect.reset();
+            effect.position.z = ballBase.position.z;
+            effect.position.x = ballBase.position.x;
             strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
             effect.addPlaneY(3, 12);
+
             var ballPosition = new three.Vector3(ballBase.position.x, ballBase.position.y, ballBase.position.z);
             effect.worldToLocal(ballPosition);
             ballPosition.x = (ballPosition.x + 1) / 2;
             ballPosition.y = (ballPosition.y + 1) / 2;
             ballPosition.z = (ballPosition.z + 1) / 2;
             effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, 1.2, 12);
+            ballPosition = new three.Vector3(ballMid.position.x, ballMid.position.y - 5, ballMid.position.z);
+            effect.worldToLocal(ballPosition);
+            ballPosition.x = (ballPosition.x + 1) / 2;
+            ballPosition.y = (ballPosition.y + 1) / 2;
+            ballPosition.z = (ballPosition.z + 1) / 2;
+            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, .8, 12);
+
             ballPosition = new three.Vector3(ballMid.position.x, ballMid.position.y, ballMid.position.z);
             effect.worldToLocal(ballPosition);
             ballPosition.x = (ballPosition.x + 1) / 2;
             ballPosition.y = (ballPosition.y + 1) / 2;
             ballPosition.z = (ballPosition.z + 1) / 2;
-            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, .6, 12);
+            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, .4, 12);
 
             renderer.render(scene2, camera);
 
             render_stats.update();
         };
 
-        function applyForce() {
-            if (!mouse_position) return;
-            var strength = 35, distance, effect, offset, box;
-
-            for (var i = 0; i < boxes.length; i++) {
-                box = boxes[i];
-                distance = mouse_position.distanceTo(box.position),
-                effect = mouse_position.clone().sub(box.position).normalize().multiplyScalar(strength / distance).negate(),
-                offset = mouse_position.clone().sub(box.position);
-                box.applyImpulse(effect, offset);
-            }
-        };
-        var y = ballBase.position.y;
+        var flipper = -10000; // :D
         function jump() {
-            if (y == ballBase.position.y) {
-                ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
-            }
-            y = ballBase.position.y;
+            ballBase.applyImpulse(new three.Vector3(flipper = -flipper, 50000, 0), new three.Vector3(0, 0, 0));
         }
-
         setTimeout(function () {
-            setInterval(jump, 100);
+            setInterval(jump, 2000);
         }, 2000);
 
     </script>
