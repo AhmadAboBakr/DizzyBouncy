@@ -417,7 +417,7 @@
 				ball_material,
                 1
 			);
-        ballMid.position.set(1, 21, 0);
+        ballMid.position.set(0, 19.9, 0);
         ballMid.castShadow = true;
 
         addBall(points, values, new THREE.Vector3(0, 0, 0));
@@ -460,20 +460,35 @@
 
 
         //Configure contraints
-        
+
         //var baseHinge = new Physijs.HingeConstraint(ballBase, ballBase, new THREE.Vector3(0, 10, 0), new THREE.Vector3(0, 0, 1));
         //scene.addConstraint(baseHinge, true);
         //baseHinge.setLimits(-three.Math.degToRad(10), three.Math.degToRad(10), null, 0.5);
 
-        var baseMidConstraint = new Physijs.DOFConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
+        var baseMidConstraint = new Physijs.HingeConstraint(ballBase, ballMid, new THREE.Vector3(0, 14.9, 0), new THREE.Vector3(0, 0, 1));
         scene.addConstraint(baseMidConstraint, true);
         var hazza = three.Math.degToRad(10);
-        baseMidConstraint.axisa = new three.Vector3(0, 1, 0);
-        baseMidConstraint.axisb = new three.Vector3(1, 0, 0);
-        baseMidConstraint.setLinearLowerLimit(new THREE.Vector3(0, -1, 0)); // sets the lower end of the linear movement along the x, y, and z axes.
-        baseMidConstraint.setLinearUpperLimit(new THREE.Vector3(0, 1, 0)); // sets the upper end of the linear movement along the x, y, and z axes.
-        baseMidConstraint.setAngularLowerLimit(new THREE.Vector3(-hazza, -hazza, -hazza)); // sets the lower end of the angular movement, in radians, along the x, y, and z axes.
-        baseMidConstraint.setAngularUpperLimit(new THREE.Vector3(hazza, hazza, hazza)); // sets the upper end of the angular movement, in radians, along the x, y, and z axes.
+        baseMidConstraint.setLimits(-hazza, hazza, null, 0.8);
+        baseMidConstraint.enableAngularMotor(5, 1);
+
+        //baseMidConstraint.setLimits(new THREE.Vector3(0, 0, 0),
+        //                            new THREE.Vector3(0, 5, 0),
+        //                            new THREE.Vector3(-hazza, -hazza, -hazza),
+        //                            new THREE.Vector3(hazza, hazza, hazza));
+        //baseMidConstraint.enableLinearMotor(5, 500);
+        //baseMidConstraint.enableAngularMotor(5, 500);
+        //baseMidConstraint.axisa = new three.Vector3(0, 1, 0);
+        //baseMidConstraint.axisb = new three.Vector3(1, 0, 0);
+        //baseMidConstraint.setLinearLowerLimit(new THREE.Vector3(0, -1, 0)); // sets the lower end of the linear movement along the x, y, and z axes.
+        //baseMidConstraint.setLinearUpperLimit(new THREE.Vector3(0, 4, 0)); // sets the upper end of the linear movement along the x, y, and z axes.
+        //baseMidConstraint.setAngularLowerLimit(new THREE.Vector3(-hazza, -hazza, -hazza)); // sets the lower end of the angular movement, in radians, along the x, y, and z axes.
+        //baseMidConstraint.setAngularUpperLimit(new THREE.Vector3(hazza, hazza, hazza)); // sets the upper end of the angular movement, in radians, along the x, y, and z axes.
+        //baseMidConstraint.configureAngularMotor(0, three.Math.degToRad(0), three.Math.degToRad(0), 10, 10000);
+        //baseMidConstraint.enableAngularMotor(0);
+        //baseMidConstraint.configureAngularMotor(1, three.Math.degToRad(0), three.Math.degToRad(0), 10, 10000);
+        //baseMidConstraint.enableAngularMotor(1);
+        //baseMidConstraint.configureAngularMotor(2, three.Math.degToRad(0), three.Math.degToRad(0), 10, 10000);
+        //baseMidConstraint.enableAngularMotor(2);
 
         //baseMidConstraint.axisa = new three.Vector3(0, 1, 0);
         //baseMidConstraint.axisb = new three.Vector3(1, 0, 0);
