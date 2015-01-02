@@ -195,7 +195,7 @@
 
         // Meshes
         var ground = new Physijs.BoxMesh(
-			new THREE.BoxGeometry(100, 5, 20),
+			new THREE.BoxGeometry(100, 5, 300),
 			ground_material,
 			0 // mass
 		);
@@ -385,7 +385,7 @@
 
         var flipper = -10000; // :D
         function jump() {
-            ballBase.applyImpulse(new three.Vector3(flipper = -flipper, 50000, 0), new three.Vector3(0, 0, 0));
+            ballBase.applyImpulse(new three.Vector3(flipper = -flipper, 50000, -4000), new three.Vector3(0, 0, 0));
         }
         setTimeout(function () {
             setInterval(jump, 2000);
