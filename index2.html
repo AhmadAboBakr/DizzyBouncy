@@ -161,7 +161,7 @@
         var effect;
 
         var scene = new Physijs.Scene();
-        scene.setGravity(new THREE.Vector3(0, -30, 0));
+        scene.setGravity(new THREE.Vector3(0, -98, 0));
         scene.addEventListener('update', update);
         var scene2 = new THREE.Scene();
         var renderer = new three.WebGLRenderer({ antialias: true });
@@ -189,7 +189,7 @@
 			    reflectivity: 0.8
 			}),
 			.4, // low friction
-			.6 // high restitution
+			.8 // high restitution
 		);
 
 
@@ -205,7 +205,7 @@
         var ballBase = new Physijs.SphereMesh(
 				new THREE.IcosahedronGeometry(5, 4),
 				ball_material,
-                1000
+                100
 			);
         ballBase.position.set(0, 10, 0);
         ballBase.castShadow = true;
@@ -215,10 +215,8 @@
 				ball_material,
                 0.1
 			);
-        ballMid.position.set(5, 15, 0);
+        ballMid.position.set(0, 20, 0);
         ballMid.castShadow = true;
-
-        var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
 
         // Light
         var light = new THREE.DirectionalLight(0xFFFFFF);
@@ -282,7 +280,13 @@
         scene2.add(light);
 
         //endeffect
+        var baseMidConstraint = new Physijs.DOFConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
         scene.addConstraint(baseMidConstraint, true);
+        baseMidConstraint.setLinearLowerLimit(new THREE.Vector3(-1, -5, -5)); // sets the lower end of the linear movement along the x, y, and z axes.
+        baseMidConstraint.setLinearUpperLimit(new THREE.Vector3(1, 5, 5)); // sets the upper end of the linear movement along the x, y, and z axes.
+        baseMidConstraint.setAngularLowerLimit(new THREE.Vector3(0, -Math.PI/4, 0)); // sets the lower end of the angular movement, in radians, along the x, y, and z axes.
+        baseMidConstraint.setAngularUpperLimit(new THREE.Vector3(0, Math.PI/4, 0)); // sets the upper end of the angular movement, in radians, along the x, y, and z axes.
+
 
         var render_stats = new Stats();
         render_stats.domElement.style.position = 'absolute';
@@ -321,6 +325,9 @@
 
         function update() {
             //applyForce();
+
+            ballBase.setAngularVelocity(new three.Vector3(0, 0, 0));
+
             scene.simulate(undefined, 1);
             physics_stats.update();
 
@@ -351,25 +358,11 @@
             render_stats.update();
         };
 
-        function applyForce() {
-            if (!mouse_position) return;
-            var strength = 35, distance, effect, offset, box;
-
-            for (var i = 0; i < boxes.length; i++) {
-                box = boxes[i];
-                distance = mouse_position.distanceTo(box.position),
-                effect = mouse_position.clone().sub(box.position).normalize().multiplyScalar(strength / distance).negate(),
-                offset = mouse_position.clone().sub(box.position);
-                box.applyImpulse(effect, offset);
-            }
-        };
-        function jumb() {
-            ballBase.rotation.set(0, 0, 0);
-
-            ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+        function jump() {
+            ballBase.applyImpulse(new three.Vector3(0, 5000, 0), new three.Vector3(0, 0, 0));
         }
         setTimeout(function () {
-            setInterval(jumb, 2200);
+            setInterval(jump, 2000);
         }, 2000);
 
     </script>

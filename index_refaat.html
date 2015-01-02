@@ -460,15 +460,25 @@
 
 
         //Configure contraints
+        
+        //var baseHinge = new Physijs.HingeConstraint(ballBase, ballBase, new THREE.Vector3(0, 10, 0), new THREE.Vector3(0, 0, 1));
+        //scene.addConstraint(baseHinge, true);
+        //baseHinge.setLimits(-three.Math.degToRad(10), three.Math.degToRad(10), null, 0.5);
 
-        var baseMidConstraint = new Physijs.ConeTwistConstraint(ballBase, ballMid, new THREE.Vector3(0, 14.9, 0));
+        var baseMidConstraint = new Physijs.DOFConstraint(ballBase, ballMid, new THREE.Vector3(0, 15, 0));
         scene.addConstraint(baseMidConstraint, true);
         var hazza = three.Math.degToRad(10);
         baseMidConstraint.axisa = new three.Vector3(0, 1, 0);
         baseMidConstraint.axisb = new three.Vector3(1, 0, 0);
-        baseMidConstraint.setLimit(hazza, hazza, hazza); // rotational limit, in radians, for each axis
+        baseMidConstraint.setLinearLowerLimit(new THREE.Vector3(0, -1, 0)); // sets the lower end of the linear movement along the x, y, and z axes.
+        baseMidConstraint.setLinearUpperLimit(new THREE.Vector3(0, 1, 0)); // sets the upper end of the linear movement along the x, y, and z axes.
+        baseMidConstraint.setAngularLowerLimit(new THREE.Vector3(-hazza, -hazza, -hazza)); // sets the lower end of the angular movement, in radians, along the x, y, and z axes.
+        baseMidConstraint.setAngularUpperLimit(new THREE.Vector3(hazza, hazza, hazza)); // sets the upper end of the angular movement, in radians, along the x, y, and z axes.
+
+        //baseMidConstraint.axisa = new three.Vector3(0, 1, 0);
+        //baseMidConstraint.axisb = new three.Vector3(1, 0, 0);
+        //baseMidConstraint.setLimit(hazza, hazza, hazza); // rotational limit, in radians, for each axis
         //baseMidConstraint.setMotorMaxImpulse(10); // float value of the maximum impulse the motor can apply toward its target
-        baseMidConstraint.setMaxMotorImpulse(0.001);
         //baseMidConstraint.enableMotor();
         //var targetAngle = -10;
         //var motorEnabled = true;
@@ -487,7 +497,7 @@
         //        baseMidConstraint.disableMotor();
         //}, 1000);
 
-        baseMidConstraint.disableMotor();
+        //baseMidConstraint.disableMotor();
 
 
         var render_stats = new Stats();
@@ -520,7 +530,8 @@
         function update() {
             //applyForce();
 
-            ballBase.rotation.set(0, 0, 0);
+            //ballBase.rotation.set(0, 0, 0);
+            ballBase.setAngularVelocity(new three.Vector3(0, 0, 0));
 
             scene.simulate(undefined, 1);
             physics_stats.update();
@@ -581,7 +592,7 @@
 
             switch (e.keyCode) {
                 case 32:
-                    ballBase.applyImpulse(new three.Vector3(0, 30000, 0), new three.Vector3(0, 0, 0));
+                    ballBase.applyImpulse(new three.Vector3(0, 5000, 0), new three.Vector3(0, 0, 0));
                     break;
             }
         }
