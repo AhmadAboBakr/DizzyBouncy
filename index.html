@@ -33,7 +33,6 @@
 
     </script>
     <script type="x-shader/x-vertex" id="fragmentShader">
-
         uniform sampler2D textureMap;
         uniform sampler2D normalMap;
         uniform vec3 color;
@@ -41,7 +40,7 @@
         uniform float texScale;
         uniform float useSSS;
         uniform float useScreen;
-
+        uniform float flipper;
         varying vec3 vNormal;
         varying vec4 vPosition;
         varying vec4 vOPosition;
@@ -49,16 +48,17 @@
         varying vec3 vU;
         varying vec3 vEye;
 
-        float random(vec3 scale,float seed){return fract(sin(dot(gl_FragCoord.xyz+seed,scale))*43758.5453+seed);}
+        float random(vec3 scale,float seed){
+        return fract(sin(dot(gl_FragCoord.xyz+seed,scale))*43758.5453+seed);
+        }
+
 
         void main() {
-
         vec3 n = normalize( vONormal.xyz );
         vec3 blend_weights = abs( n );
         blend_weights = ( blend_weights - 0.2 ) * 7.;
         blend_weights = max( blend_weights, 0. );
         blend_weights /= ( blend_weights.x + blend_weights.y + blend_weights.z );
-
         vec2 coord1 = vPosition.yz * texScale;
         vec2 coord2 = vPosition.zx * texScale;
         vec2 coord3 = vPosition.xy * texScale;
@@ -66,44 +66,31 @@
         vec3 bump1 = texture2D( normalMap, coord1 ).rgb;
         vec3 bump2 = texture2D( normalMap, coord2 ).rgb;
         vec3 bump3 = texture2D( normalMap, coord3 ).rgb;
-
-        vec3 blended_bump = bump1 * blend_weights.xxx +
-        bump2 * blend_weights.yyy +
-        bump3 * blend_weights.zzz;
+        vec3 blended_bump = bump1 * blend_weights.xxx + bump2 * blend_weights.yyy + bump3 * blend_weights.zzz;
 
         vec3 tanX = vec3( vNormal.x, -vNormal.z, vNormal.y);
         vec3 tanY = vec3( vNormal.z, vNormal.y, -vNormal.x);
         vec3 tanZ = vec3(-vNormal.y, vNormal.x, vNormal.z);
-        vec3 blended_tangent = tanX * blend_weights.xxx +
-        tanY * blend_weights.yyy +
-        tanZ * blend_weights.zzz;
-
+        vec3 blended_tangent = tanX * blend_weights.xxx + tanY * blend_weights.yyy + tanZ * blend_weights.zzz;
         vec3 normalTex = blended_bump * 2.0 - 1.0;
         normalTex.xy *= normalScale;
-        normalTex.y *= -1.;
+        normalTex.y *= flipper*-1.;
         normalTex = normalize( normalTex );
         mat3 tsb = mat3( normalize( blended_tangent ), normalize( cross( vNormal, blended_tangent ) ), normalize( vNormal ) );
         vec3 finalNormal = tsb * normalTex;
-
         vec3 r = reflect( normalize( vU ), normalize( finalNormal ) );
         float m = 2.0 * sqrt( r.x * r.x + r.y * r.y + ( r.z + 1.0 ) * ( r.z + 1.0 ) );
         vec2 calculatedNormal = vec2( r.x / m + 0.5,  r.y / m + 0.5 );
-
         vec3 base = texture2D( textureMap, calculatedNormal ).rgb;
-
         float rim = 1.75 * max( 0., abs( dot( normalize( vNormal ), normalize( -vOPosition.xyz ) ) ) );
         base += useSSS * color * ( 1. - .75 * rim );
         base += ( 1. - useSSS ) * 10. * base * color * clamp( 1. - rim, 0., .15 );
-
         if( useScreen == 1. ) {
         base = vec3( 1. ) - ( vec3( 1. ) - base ) * ( vec3( 1. ) - base );
         }
-
         float nn = .05 * random( vec3( 1. ), length( gl_FragCoord ) );
         base += vec3( nn );
-
-        gl_FragColor = vec4( base.rgb, 1. );
-
+        gl_FragColor = flipper/abs(flipper)*flipper*vec4( base.rgb, 1. );
         }
 
     </script>
@@ -170,7 +157,7 @@
         document.body.appendChild(renderer.domElement);
 
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
-        camera.position.set(0, 50, 60);
+        camera.position.set(0, 20, 60);
         camera.lookAt(scene.position);
 
         // Materials
@@ -255,6 +242,7 @@
                 texScale: { type: 'f', value: 5 },
                 useSSS: { type: 'f', value: 1 },
                 useScreen: { type: 'f', value: 0 },
+                flipper: { type: 'f', value: 1 },
                 color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
             },
             vertexShader: document.getElementById('vertexShader').textContent,
@@ -272,15 +260,13 @@
         material.uniforms.textureMap.value.wrapS = material.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
         //not working with multiple effects
-        //material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('carbon-fiber.jpg');
-        //material.uniforms.normalMap.value.wrapS = material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
-        
-
+        material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('723-normal.jpg');
+        material.uniforms.normalMap.value.wrapS = material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
         resolution = 35;
         effect = new THREE.MarchingCubes(resolution, material, true, true);
         effect.position.set(0, 0, 0);
         effect.scale.set(20, 20, 20);
-        effect.isolation = 60;
+        //effect.isolation = 60;
 
         //endeffect
 
@@ -309,26 +295,38 @@
         sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
 
 
-        var horizon = new THREE.MarchingCubes(resolution, material, true, true);
-        horizon.position.set(0, 0, 0);
-        horizon.scale.set(45, 20, 300);
-        horizon.addPlaneY(2, 12);
+        var horizon = new THREE.MarchingCubes(7, material, true, true);
+        //horizon.position.set(0, 0, 0);
+        
+        //var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
+        //horizon.position.y = -12.1709;
 
-        var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
-        horizon.position.y = -12.1709;
-
+        horizon.scale.set(250, 20, 250);
+        horizon.addPlaneY(2, 0);
+        horizon.position.y += .3359;
         var sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
 
         var scene2 = new THREE.Scene(); //scene 2 is the one to draw
         scene2.add(effect);
         scene2.add(camera);
         //scene2.add(light);
-        //scene2.add(ambient);
+        scene2.add(ambient);
         scene2.add(sphere);
         var poinky = new Poinky(ballBase,ballMid,effect);
         requestAnimationFrame(render);
         scene.simulate();
         scene2.add(horizon);
+        var shaderFlipper = -1;
+        var FliperOfShaderFlipper = .1;
+        setInterval(function () {
+            if (shaderFlipper > 1|| shaderFlipper < -1) {
+                FliperOfShaderFlipper *= -1;
+            }
+            shaderFlipper += FliperOfShaderFlipper;
+            if (Math.abs(shaderFlipper) > .5)
+                material.uniforms.flipper.value = shaderFlipper;
+            else shaderFlipper+=FliperOfShaderFlipper*.5
+        }, 35);
         ///
 
         function applyPhysicsMamboJambo() {
@@ -344,6 +342,7 @@
             }, 5000);
         }
         function update() {
+
             ballBase.setAngularVelocity(new three.Vector3(0, 0, 0));
             poinky.update();
             effect.position.z = ballBase.position.z;
@@ -361,7 +360,7 @@
             ballBase.rotation.set(0, 0, 0);
             requestAnimationFrame(render);
             effect.reset();
-            effect.addPlaneY(3.0, 12);
+            effect.addPlaneY(3., 12);
             poinky.draw();
             renderer.render(scene2, camera);
         };
