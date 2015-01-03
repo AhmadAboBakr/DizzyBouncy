@@ -5,7 +5,8 @@
     this.baseBallStrength = 1.2;
     this.midBallStrength = .8;
     this.topBallStrength = 0.4;
-    var baseBallPosition, midBallPosition,topBallPosition;
+    var baseBallPosition, midBallPosition, topBallPosition;
+    this.update();
     this.update = function () {
         baseBallPosition = new three.Vector3(baseBall.position.x, baseBall.position.y, baseBall.position.z);
         this.effect.worldToLocal(baseBallPosition);
