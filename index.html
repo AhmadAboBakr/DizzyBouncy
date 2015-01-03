@@ -266,14 +266,14 @@
         material.uniforms.useSSS.value = .15;
         material.uniforms.useScreen.value = 0;
 
-        material.uniforms.color.value.setRGB(80. / 255., 72. / 255., 85. / 255.);
+        material.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
 
         material.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
         material.uniforms.textureMap.value.wrapS = material.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
         //remove to get the old effect
-        material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('ice-snow.jpg');
-        material.uniforms.normalMap.value.wrapS = material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+        //material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('carbon-fiber.jpg');
+        //material.uniforms.normalMap.value.wrapS = material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
         //end remove to get the old effect
 
         resolution = 50;
@@ -330,8 +330,15 @@
         });
         sphereMaterial.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
         sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-        var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
-        horizon.position.y = -12;
+
+
+        var horizon = new THREE.MarchingCubes(resolution, material, true, true);
+        horizon.position.set(0, 0, 0);
+        horizon.scale.set(45, 20, 300);
+        horizon.addPlaneY(2, 12);
+
+        //var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
+        //horizon.position.y = -12.175  ;
         var sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
         scene2.add(sphere);
         var ground2 = ground.clone();
@@ -356,7 +363,6 @@
             effect.position.x = ballBase.position.x;
             strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
             effect.addPlaneY(3, 12);
-
             var ballPosition = new three.Vector3(ballBase.position.x, ballBase.position.y, ballBase.position.z);
             effect.worldToLocal(ballPosition);
             ballPosition.x = (ballPosition.x + 1) / 2;
@@ -384,6 +390,7 @@
 
         var flipper = -10000; // :D
         function jump() {
+            
             ballBase.applyImpulse(new three.Vector3(flipper = -flipper, 50000, -4000), new three.Vector3(0, 0, 0));
         }
         setTimeout(function () {
