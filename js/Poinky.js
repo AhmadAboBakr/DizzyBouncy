@@ -39,13 +39,13 @@
     });
 
 
-    var flipper = -800; // :D
+    var flipper = -2000; // :D
     function jump() {
-        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
+        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, -800), that.baseBall.position);
     }
 
     setTimeout(function () {
-        setInterval(jump, 5000);
+        setInterval(jump, 2000);
     }, 2000);
 
     //this.hinge = new CANNON.HingeConstraint(this.baseBall, this.midBall, {
