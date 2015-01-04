@@ -4,10 +4,11 @@
     <title>Poinky Test1</title>
     <script src="js/three.js"></script>
     <script src="js/stats.js"></script>
-    <script src="js/physi.js"></script>
+    <script src="js/cannon.js"></script>
     <script src="fonts/helvetiker_bold.typeface.js"></script>
     <script src="fonts/helvetiker_regular.typeface.js"></script>
     <script src="js/MarchingCubes.js"></script>
+    <script src="js/Poinky.js"></script>
     <script type="x-shader/x-vertex" id="vertexShader">
 
         varying vec3 vNormal;
@@ -154,97 +155,44 @@
 </head>
 <body>
     <script>
-        Physijs.scripts.worker = 'js/physijs_worker.js';
-        Physijs.scripts.ammo = 'ammo.js';
-
         var three = THREE;
-        var effect;
 
-        var scene = new Physijs.Scene();
-        scene.setGravity(new THREE.Vector3(0, -98, 0));
-        scene.addEventListener('update', update);
-        var scene2 = new THREE.Scene();
+        var timeStep = 1.0 / 60.0; // seconds
+
+        //ThreeJS init
+        var scene = new THREE.Scene();
+
+        //Cannonjs init
+        world = new CANNON.World();
+        world.gravity.set(0, -200, 0);
+        world.broadphase = new CANNON.NaiveBroadphase();
+        world.solver.iterations = 10;
+
         var renderer = new three.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMapEnabled = true;
         renderer.shadowMapSoft = true;
-
         document.body.appendChild(renderer.domElement);
 
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
-        camera.position.set(0, 40, 40);
+        camera.position.set(0, 50, 60);
         camera.lookAt(scene.position);
+
+        // Physics World
         // Materials
-        ground_material = Physijs.createMaterial(
-			new THREE.MeshLambertMaterial({ color: 0xff0000 }),
-			.8, // high friction
-			.4 // low restitution
-		);
+        var groundMaterial = new CANNON.Material("groundMaterial");
 
-        ball_material = Physijs.createMaterial(
-			new THREE.MeshLambertMaterial({
-			    transparent: true,
-			    color: 0xaaffaa,
-			    refractionRatio: 0.97,
-			    reflectivity: 0.8
-			}),
-			.4, // low friction
-			.8 // high restitution
-		);
+        var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+        ground.addShape(new CANNON.Plane());
+        ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+        ground.position.set(0, -15, 0);
+        world.add(ground);
 
-
-        // Meshes
-        var ground = new Physijs.BoxMesh(
-			new THREE.BoxGeometry(100, 5, 20),
-			ground_material,
-			0 // mass
-		);
-        ground.position.y = -18;
-        ground.receiveShadow = true;
-
-        var ballBase = new Physijs.SphereMesh(
-				new THREE.IcosahedronGeometry(5, 4),
-				ball_material,
-                1000
-			);
-        ballBase.position.set(-5, 10, 0);
-        ballBase.castShadow = true;
-
-        var ballMid = new Physijs.SphereMesh(
-				new THREE.IcosahedronGeometry(5, 4),
-				ball_material,
-                1
-			);
-        ballMid.position.set(-5, 19.9, 0);
-        ballMid.castShadow = true;
-
-        // Light
-        var light = new THREE.DirectionalLight(0xFFFFFF);
-        light.position.set(20, 40, -15);
-        light.target.position.copy(scene.position);
-        light.castShadow = true;
-        light.shadowCameraLeft = -60;
-        light.shadowCameraTop = -60;
-        light.shadowCameraRight = 60;
-        light.shadowCameraBottom = 60;
-        light.shadowCameraNear = 20;
-        light.shadowCameraFar = 200;
-        light.shadowBias = -.0001
-        light.shadowMapWidth = light.shadowMapHeight = 2048;
-        light.shadowDarkness = .7;
-
-        var ambient = new three.AmbientLight(0x111111);
-        ambient.intensity = 0.1;
-
-        scene.add(camera);
-        scene.add(light);
-        scene.add(ambient);
-        scene.add(ground);
-        scene.add(ballBase);
-        scene.add(ballMid);
-
-        resolution = 30;
         //effect
+        /*
+            increasing it will dramatically increase the marching cube smothness
+            but will dramatically decrease perfromance
+        */
         material = new THREE.ShaderMaterial({
 
             uniforms: {
@@ -254,128 +202,99 @@
                 texScale: { type: 'f', value: 5 },
                 useSSS: { type: 'f', value: 1 },
                 useScreen: { type: 'f', value: 0 },
-                color: { type: 'c', value: new THREE.Color(0, 0, 0) }
+                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
             },
             vertexShader: document.getElementById('vertexShader').textContent,
             fragmentShader: document.getElementById('fragmentShader').textContent,
-            side: THREE.DoubleSide
+            side: THREE.FrontSide
 
         });
         material.uniforms.normalScale.value = .5;
         material.uniforms.texScale.value = 10;
         material.uniforms.useSSS.value = .15;
-        material.uniforms.useScreen.value = 0;
+        material.uniforms.useScreen.value = .3;
+
+
         material.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
-        //material.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('723-normal.jpg');
-        material.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
+        material.uniforms.textureMap.value.wrapS = material.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
-        resolution = 50;
-
+        resolution = 35;
         effect = new THREE.MarchingCubes(resolution, material, true, true);
         effect.position.set(0, 0, 0);
         effect.scale.set(20, 20, 20);
         effect.isolation = 60;
-        
-        scene2.add(effect);
-        scene2.add(camera);
-        scene2.add(light);
 
         //endeffect
-        var baseMidConstraint = new Physijs.HingeConstraint(ballBase, ballMid, new THREE.Vector3(-5, 14.9, 0), new THREE.Vector3(0, 0, 1));
-        scene.addConstraint(baseMidConstraint, true);
-        var hazza = three.Math.degToRad(8);
-        baseMidConstraint.setLimits(-hazza, hazza, null, 0.4);
-        
-        baseMidConstraint.enableAngularMotor(2, 0.5);
-        setTimeout(function () {
-            console.log(baseMidConstraint);
-            baseMidConstraint.enableAngularMotor(0, 0);
-        }, 5000);
 
-        var render_stats = new Stats();
-        render_stats.domElement.style.position = 'absolute';
-        render_stats.domElement.style.top = '1px';
-        render_stats.domElement.style.zIndex = 100;
-        document.body.appendChild(render_stats.domElement);
 
-        var physics_stats = new Stats();
-        physics_stats.domElement.style.position = 'absolute';
-        physics_stats.domElement.style.top = '50px';
-        physics_stats.domElement.style.zIndex = 100;
-        document.body.appendChild(physics_stats.domElement);
+        //Create Poinky
+        var poinky = new Poinky(-9, 5, effect, world);
 
-        requestAnimationFrame(render);
-        scene.simulate();
+        // Adjust constraint equation parameters for ground/poinky contact
+        var groundPoinkyContact = new CANNON.ContactMaterial(groundMaterial, poinky.material, {
+            friction: 1,
+            restitution: 0.4,
+            contactEquationStiffness: 1e8,
+            contactEquationRegularizationTime: 3,
+            frictionEquationStiffness: 1e13,
+            frictionEquationRegularizationTime: 3,
+        });
+        world.addContactMaterial(groundPoinkyContact);
+        var stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '1px';
+        stats.domElement.style.zIndex = 100;
+        document.body.appendChild(stats.domElement);
 
         //sky sphere
         sphereMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
                 noise: { type: 'f', value: .04 },
-                color: { type: 'c', value: new THREE.Color(0, 0, 0) }
+                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
             },
             vertexShader: document.getElementById('sphere-vs').textContent,
             fragmentShader: document.getElementById('sphere-fs').textContent,
             side: THREE.DoubleSide
 
         });
-        sphereMaterial.uniforms.color.value.setRGB(18. / 255., 72. / 255., 85. / 255.);
         sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
 
-        var sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
-        scene2.add(sphere);
+        var horizon = new THREE.MarchingCubes(resolution, material, true, true);
+        horizon.position.set(0, 0, 0);
+        horizon.scale.set(45, 20, 300);
+        horizon.addPlaneY(2, 12);
 
-        ///
+        var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
+        horizon.position.y = -12.1709;
 
+        //Fill scene
+        scene.add(horizon);
+        scene.add(effect);
+        scene.add(camera);
+
+        //Start
+        requestAnimationFrame(render);
+
+        setInterval(update, timeStep * 1000);
         function update() {
-            //applyForce();
+            poinky.update();
 
-            ballBase.setAngularVelocity(new three.Vector3(0, 0, 0));
+            //ground.position.x = ballBase.position.x;
+            //ground.position.z = ballBase.position.z;
 
-            scene.simulate(undefined, 1);
-            physics_stats.update();
-
-
+            world.step(timeStep);
+            stats.update();
         };
 
         function render() {
-            ballBase.rotation.set(0, 0, 0);
             requestAnimationFrame(render);
             effect.reset();
-            strength = 1.2 / ((Math.sqrt(2) - 1) / 4 + 1);
-            effect.addPlaneY(3, 12);
-            var ballPosition = new three.Vector3(ballBase.position.x, ballBase.position.y, ballBase.position.z);
-            effect.worldToLocal(ballPosition);
-            ballPosition.x = (ballPosition.x + 1) / 2;
-            ballPosition.y = (ballPosition.y + 1) / 2;
-            ballPosition.z = (ballPosition.z + 1) / 2;
-            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, 1.2, 12);
-            ballPosition = new three.Vector3(ballMid.position.x, ballMid.position.y - 5, ballMid.position.z);
-            effect.worldToLocal(ballPosition);
-            ballPosition.x = (ballPosition.x + 1) / 2;
-            ballPosition.y = (ballPosition.y + 1) / 2;
-            ballPosition.z = (ballPosition.z + 1) / 2;
-            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, .8, 12);
-
-            ballPosition = new three.Vector3(ballMid.position.x, ballMid.position.y, ballMid.position.z);
-            effect.worldToLocal(ballPosition);
-            ballPosition.x = (ballPosition.x + 1) / 2;
-            ballPosition.y = (ballPosition.y + 1) / 2;
-            ballPosition.z = (ballPosition.z + 1) / 2;
-            effect.addBall(ballPosition.x, ballPosition.y, ballPosition.z, .4, 12);
-
-            renderer.render(scene2, camera);
-
-            render_stats.update();
+            effect.addPlaneY(3.0, 12);
+            poinky.draw();
+            renderer.render(scene, camera);
         };
 
-        var flipper = -10000; // :D
-        function jump() {
-            ballBase.applyImpulse(new three.Vector3(flipper = -flipper, 50000, 0), new three.Vector3(0, 0, 0));
-        }
-        setTimeout(function () {
-            setInterval(jump, 2000);
-        }, 2000);
 
     </script>
 </body>
