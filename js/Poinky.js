@@ -42,7 +42,13 @@
 
 
     var flipper = -2000; // :D
+<<<<<<< HEAD
     function jump() {
+=======
+    var time = Date.now();
+
+    this.jump = function () {
+>>>>>>> d493e47e7c3c3f06a4d3d4c43a11b05922f94ada
         that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
     }
 
@@ -60,6 +66,11 @@
     var baseBallPosition, midBallPosition, topBallPosition;
 
     this.update = function () {
+        if (Date.now() > time + 2000 && this.baseBall.position.y < -9.999 && this.baseBall.position.y > -10.1) {
+            poinky.jump();
+            time = Date.now();
+        }
+
         //Physics
         this.midBall.applyForce(new CANNON.Vec3(2, 150, 0), this.midBall.position);
         this.baseBall.updateMassProperties();
