@@ -185,7 +185,7 @@
         var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
         ground.addShape(new CANNON.Plane());
         ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -30, 0);
+        ground.position.set(0, -15, 0);
         world.add(ground);
 
         material = new THREE.ShaderMaterial({
