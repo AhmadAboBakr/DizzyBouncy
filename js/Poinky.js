@@ -8,8 +8,8 @@
     this.world = world;
     //changing those values change the shape of Poinky
     this.baseBallStrength = .8;
-    this.midBallStrength = .4;
-    this.topBallStrength = 0.2;
+    this.midBallStrength = .5;
+    this.topBallStrength = 0.3;
 
     //Create physics
     this.material = new CANNON.Material("poinkyMaterial");
@@ -58,9 +58,7 @@
     //    axisA: new CANNON.Vec3(1, 0, 0)
     //});
     //this.world.addConstraint(this.hinge);
-
     var baseBallPosition, midBallPosition, topBallPosition;
-
     this.update = function () {
         if (Date.now() > time + 2000 && this.baseBall.position.y < -9.999 && this.baseBall.position.y > -10.1) {
             poinky.jump();
@@ -101,12 +99,12 @@
         this.effect.position.x = this.baseBall.position.x;
         this.effect.position.z = this.baseBall.position.z;
 
-        this.effect.addBall(
-            topBallPosition.x,
-            topBallPosition.y,
-            topBallPosition.z,
-            this.topBallStrength, 12
-            );
+        //this.effect.addBall(
+        //    topBallPosition.x,
+        //    topBallPosition.y,
+        //    topBallPosition.z,
+        //    this.topBallStrength, 12
+        //    );
         this.effect.addBall(
             midBallPosition.x,
             midBallPosition.y,
