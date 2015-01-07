@@ -14,7 +14,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, platformsMaterial, scene
     //Globals
     this.scrollSpeed = 0.5;
     this.sidewaySpeed = 30;
-    this.platformsGap = 20;
+    this.platformsGap = 40;
 
     //Platforms array
     this.platforms = [];
@@ -57,7 +57,12 @@ function PlatformManager(sceneWidth, sceneDepth, world, platformsMaterial, scene
             this.platforms[i].update();
         }
     }
+    this.moveAllPlatforms = function (x) {
+        for (var i = 0; i < this.platforms.length; i++) {
+            this.platforms[i].translate(x, 0, 0);
+            this.platforms[i].update();
 
+    }
     this.draw = function () {
         for (var i = 0; i < this.platforms.length; i++)
             this.platforms[i].draw();
