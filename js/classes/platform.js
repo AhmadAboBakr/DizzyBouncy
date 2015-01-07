@@ -29,7 +29,13 @@
     this.scene.add(this.mesh);
 
     this.update = function () {
-        //this.midBall.applyForce(new CANNON.Vec3(0, 0, -20), this.midBall.position);
+        //this.body.applyForce(new CANNON.Vec3(0, 0, -20), this.body.position);
+        //this.body.position.set(this.x, this.y, this.z - 0.1);
+
+        this.x = this.body.position.x;
+        this.y = this.body.position.y;
+        this.z = this.body.position.z;
+
         this.body.updateMassProperties();
     }
 

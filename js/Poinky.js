@@ -43,7 +43,7 @@
 
     var flipper = -2000; // :D
     function jump() {
-        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, -800), that.baseBall.position);
+        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
     }
 
     setTimeout(function () {
