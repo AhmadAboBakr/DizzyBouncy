@@ -9,6 +9,7 @@
     <script src="fonts/helvetiker_regular.typeface.js"></script>
     <script src="js/MarchingCubes.js"></script>
     <script src="js/Poinky.js"></script>
+    <script src="js/classes/platform.js"></script>
     <script type="x-shader/x-vertex" id="vertexShader">
 
         varying vec3 vNormal;
@@ -177,7 +178,7 @@
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
         camera.position.set(0, 50, 60);
         camera.lookAt(scene.position);
-
+        
         // Physics World
         // Materials
         var groundMaterial = new CANNON.Material("groundMaterial");
@@ -240,25 +241,43 @@
             frictionEquationRegularizationTime: 3,
         });
         world.addContactMaterial(groundPoinkyContact);
+
+        var light = new THREE.DirectionalLight(0xFFFFFF);
+        light.position.set(20, 40, 15);
+        light.target.position.copy(scene.position);
+        light.castShadow = true;
+        light.shadowCameraLeft = -60;
+        light.shadowCameraTop = -60;
+        light.shadowCameraRight = 60;
+        light.shadowCameraBottom = 60;
+        light.shadowCameraNear = 20;
+        light.shadowCameraFar = 200;
+        light.shadowBias = -.0001
+        light.shadowMapWidth = light.shadowMapHeight = 2048;
+        light.shadowDarkness = .7;
+        scene.add(light);
+
+        var ambient = new three.AmbientLight(0x222222);
+        scene.add(ambient);
+
+        var platformsMaterial = new CANNON.Material("platformMaterial");
+        var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
+            friction: 1,
+            restitution: 0.4,
+            contactEquationStiffness: 1e8,
+            contactEquationRegularizationTime: 3,
+            frictionEquationStiffness: 1e13,
+            frictionEquationRegularizationTime: 3,
+        });
+        world.addContactMaterial(platformPoinkyContact);
+
+        var testPlatform = new Platform(0, -12, 0, 30, 3, 12, world, platformsMaterial, scene);
+        
         var stats = new Stats();
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '1px';
         stats.domElement.style.zIndex = 100;
         document.body.appendChild(stats.domElement);
-
-        //sky sphere
-        sphereMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
-                noise: { type: 'f', value: .04 },
-                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
-            },
-            vertexShader: document.getElementById('sphere-vs').textContent,
-            fragmentShader: document.getElementById('sphere-fs').textContent,
-            side: THREE.DoubleSide
-
-        });
-        sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
 
         var horizon = new THREE.MarchingCubes(resolution, material, true, true);
         horizon.position.set(0, 0, 0);
@@ -281,8 +300,7 @@
         function update() {
             poinky.update();
 
-            //ground.position.x = ballBase.position.x;
-            //ground.position.z = ballBase.position.z;
+            testPlatform.update();
 
             world.step(timeStep);
             stats.update();
@@ -293,6 +311,7 @@
             effect.reset();
             effect.addPlaneY(3.0, 12);
             poinky.draw();
+            testPlatform.draw();
             renderer.render(scene, camera);
         };
 
