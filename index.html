@@ -5,10 +5,10 @@
     <script src="js/three.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/cannon.js"></script>
-    <script src="fonts/helvetiker_bold.typeface.js"></script>
-    <script src="fonts/helvetiker_regular.typeface.js"></script>
     <script src="js/MarchingCubes.js"></script>
-    <script src="js/Poinky.js"></script>
+    <script src="js/classes/platform.js"></script>
+    <script src="js/classes/platform_manager.js"></script>
+    <script src="js/Poinky.js"></script>    
     <script type="x-shader/x-vertex" id="vertexShader">
 
         varying vec3 vNormal;
@@ -155,6 +155,8 @@
 </head>
 <body>
     <script>
+        "use strict";
+
         var three = THREE;
 
         var timeStep = 1.0 / 60.0; // seconds
@@ -163,7 +165,7 @@
         var scene = new THREE.Scene();
 
         //Cannonjs init
-        world = new CANNON.World();
+        var world = new CANNON.World();
         world.gravity.set(0, -200, 0);
         world.broadphase = new CANNON.NaiveBroadphase();
         world.solver.iterations = 10;
@@ -185,10 +187,10 @@
         var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
         ground.addShape(new CANNON.Plane());
         ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -15, 0);
+        ground.position.set(0, -40, 0);
         world.add(ground);
 
-        material = new THREE.ShaderMaterial({
+        var poinkyMaterial = new THREE.ShaderMaterial({
 
             uniforms: {
                 textureMap: { type: 't', value: null },
@@ -202,16 +204,15 @@
             vertexShader: document.getElementById('vertexShader').textContent,
             fragmentShader: document.getElementById('fragmentShader').textContent,
             side: THREE.FrontSide
-
         });
-        material.uniforms.normalScale.value = .5;
-        material.uniforms.texScale.value = 10;
-        material.uniforms.useSSS.value = .15;
-        material.uniforms.useScreen.value = .3;
+        poinkyMaterial.uniforms.normalScale.value = .5;
+        poinkyMaterial.uniforms.texScale.value = 10;
+        poinkyMaterial.uniforms.useSSS.value = .15;
+        poinkyMaterial.uniforms.useScreen.value = .3;
 
 
-        material.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
-        material.uniforms.textureMap.value.wrapS = material.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
+        poinkyMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
+        poinkyMaterial.uniforms.textureMap.value.wrapS = poinkyMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
         //effect
         /*
@@ -220,8 +221,8 @@
             but will dramatically decrease perfromance
         */
 
-        resolution = 35;
-        effect = new THREE.MarchingCubes(resolution, material, true, true);
+        var resolution = 35;
+        var effect = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
         effect.position.set(0, 0, 0);
         effect.scale.set(20, 20, 20);
         effect.isolation = 60;
@@ -242,6 +243,7 @@
             frictionEquationRegularizationTime: 3,
         });
         world.addContactMaterial(groundPoinkyContact);
+
         var stats = new Stats();
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '1px';
@@ -249,7 +251,7 @@
         document.body.appendChild(stats.domElement);
 
         //sky sphere
-        sphereMaterial = new THREE.ShaderMaterial({
+        var skySphereMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
                 noise: { type: 'f', value: .04 },
@@ -258,40 +260,51 @@
             vertexShader: document.getElementById('sphere-vs').textContent,
             fragmentShader: document.getElementById('sphere-fs').textContent,
             side: THREE.DoubleSide
-
         });
-        sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-        var skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
+        skySphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+        var skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
 
-        var horizon = new THREE.MarchingCubes(resolution, material, true, true);
+        var horizon = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
         horizon.position.set(0, 0, 0);
         horizon.scale.set(45, 20, 300);
         horizon.addPlaneY(2, 12);
 
-        //var horizon = new three.Mesh(new three.CubeGeometry(100, .5, 1000), material);
-        //horizon.position.y = -15;
+        var platformsMaterial = new CANNON.Material("platformMaterial");
+        var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
+            friction: 1,
+            restitution: 0.4,
+            contactEquationStiffness: 1e8,
+            contactEquationRegularizationTime: 3,
+            frictionEquationStiffness: 1e13,
+            frictionEquationRegularizationTime: 3,
+        });
+        world.addContactMaterial(platformPoinkyContact);
+        var manager = new PlatformManager(50, 100, world, platformPoinkyContact, scene, poinkyMaterial);
 
         //Fill scene
         scene.add(horizon);
         scene.add(effect);
         scene.add(camera);
         scene.add(skySphere);
+
         //Start
         requestAnimationFrame(render);
         function update() {
             poinky.update();
             world.step(timeStep);
-            stats.update();  
+            stats.update();
+            manager.update();           
         };
-
         function render() {
             requestAnimationFrame(render);
             update();
             effect.reset();
             effect.addPlaneY(3.5, 12);
             poinky.draw();
+            manager.draw();
             renderer.render(scene, camera);
         };
+
     </script>
 </body>
 </html>

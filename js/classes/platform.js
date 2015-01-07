@@ -1,6 +1,6 @@
-﻿function Platform(x, y, z, width, height, depth, world, physicsMaterial, scene) {
+﻿function Platform(x, y, z, width, height, depth, world, physicsMaterial, scene, renderMaterial) {
     var that = this;
-
+    console.log(renderMaterial);
     //Config
     this.x = x;
     this.y = y;
@@ -15,7 +15,7 @@
 
     //Create physics
     this.physicsMaterial = physicsMaterial || new CANNON.Material("platformMaterial");
-
+    this.renderMaterial = renderMaterial || new THREE.MeshLambertMaterial({ color: 0xff0000 });
     this.body = new CANNON.Body({ mass: 0, material: this.physicsMaterial });
     this.body.addShape(new CANNON.Box(new CANNON.Vec3(this.width, this.height, this.depth)));
     this.body.position.set(this.x, this.y, this.z);
@@ -23,7 +23,7 @@
     this.world.add(this.body);
 
     //Create display
-    this.material = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+    this.material = this.renderMaterial;
     this.geometry = new THREE.BoxGeometry(this.width, this.height, this.depth);
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);

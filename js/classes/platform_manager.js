@@ -1,5 +1,5 @@
 ﻿//Assumes the whole game is set around the world center (0,0,0)
-function PlatformManager(sceneWidth, sceneDepth, world, platformsMaterial, scene) {
+function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, renderMaterial){
     var that = this;
 
     //Config
@@ -9,12 +9,12 @@ function PlatformManager(sceneWidth, sceneDepth, world, platformsMaterial, scene
     this.world = world;
     this.scene = scene;
 
-    this.platformsMaterial = platformsMaterial || new CANNON.Material("platformMaterial");
-
+    this.platformsMaterial = PhysicsMaterial || new CANNON.Material("platformMaterial");
+    this.renderMaterial = renderMaterial;
     //Globals
     this.scrollSpeed = 0.5;
     this.sidewaySpeed = 30;
-    this.platformsGap = 40;
+    this.platformsGap = 30;
 
     //Platforms array
     this.platforms = [];
@@ -23,7 +23,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, platformsMaterial, scene
     function createPlatform() {
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? -sceneWidth / 2 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
-        that.platforms.push(new Platform(0, -12, zPos, 30, 3, 12, world, platformsMaterial, scene));
+        that.platforms.push(new Platform(0, -10, zPos, 30, 3, 12, world, platformsMaterial, scene, that.renderMaterial));
         console.log("created a platform", zPos);
     }
 
