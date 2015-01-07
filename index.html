@@ -278,13 +278,8 @@
         //Start
         requestAnimationFrame(render);
 
-        setInterval(update, timeStep * 1000);
         function update() {
             poinky.update();
-
-            //ground.position.x = ballBase.position.x;
-            //ground.position.z = ballBase.position.z;
-
             world.step(timeStep);
             stats.update();
             
@@ -292,13 +287,12 @@
 
         function render() {
             requestAnimationFrame(render);
+            update();
             effect.reset();
             effect.addPlaneY(3.5, 12);
             poinky.draw();
             renderer.render(scene, camera);
         };
-
-
     </script>
 </body>
 </html>

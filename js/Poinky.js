@@ -42,8 +42,10 @@
 
 
     var flipper = -2000; // :D
-    function jump() {
-        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, -800), that.baseBall.position);
+    var time = Date.now();
+
+    this.jump = function () {
+        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
     }
 
     //setTimeout(function () {
@@ -60,6 +62,11 @@
     var baseBallPosition, midBallPosition, topBallPosition;
 
     this.update = function () {
+        if (Date.now() > time + 2000 && this.baseBall.position.y < -9.999 && this.baseBall.position.y > -10.1) {
+            poinky.jump();
+            time = Date.now();
+        }
+
         //Physics
         this.midBall.applyForce(new CANNON.Vec3(2, 150, 0), this.midBall.position);
         this.baseBall.updateMassProperties();
