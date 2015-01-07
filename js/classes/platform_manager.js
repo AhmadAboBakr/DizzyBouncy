@@ -14,7 +14,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     //Globals
     this.scrollSpeed = 0.5;
     this.sidewaySpeed = 30;
-    this.platformsGap = 30;
+    this.platformsGap = 20;
 
     //Platforms array
     this.platforms = [];
@@ -23,7 +23,8 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     function createPlatform() {
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? -sceneWidth / 2 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
-        that.platforms.push(new Platform(0, -10, zPos, 30, 3, 12, world, platformsMaterial, scene, that.renderMaterial));
+        var xPos = Math.random() * (50)-25;
+        that.platforms.push(new Platform(xPos, -10, zPos, 15, .1, 12, world, platformsMaterial, scene, that.renderMaterial));
         console.log("created a platform", zPos);
     }
 

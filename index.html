@@ -279,7 +279,8 @@
             frictionEquationRegularizationTime: 3,
         });
         world.addContactMaterial(platformPoinkyContact);
-        var manager = new PlatformManager(50, 100, world, platformPoinkyContact, scene, poinkyMaterial);
+
+        var manager = new PlatformManager(50, 100, world, platformPoinkyContact, scene, null);
 
         //Fill scene
         scene.add(horizon);
@@ -289,6 +290,7 @@
 
         //Start
         requestAnimationFrame(render);
+
         function update() {
             poinky.update();
             world.step(timeStep);
@@ -301,10 +303,22 @@
             effect.reset();
             effect.addPlaneY(3.5, 12);
             poinky.draw();
+            console.log(poinky.baseBall.position.y);
             manager.draw();
             renderer.render(scene, camera);
         };
+        document.onkeydown = function (key) {
+            switch (key.keyCode) {
+                case 39:
+                    manager.movePlatforms(2);
+                    break;
+                case 37:
+                    manager.movePlatforms(-2);
+                    break;
+            }
+        };
 
     </script>
+
 </body>
 </html>

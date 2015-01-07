@@ -61,7 +61,7 @@
     //this.world.addConstraint(this.hinge);
     var baseBallPosition, midBallPosition, topBallPosition;
     this.update = function () {
-        if (Date.now() > time + 2000 && this.baseBall.position.y < -9.999 && this.baseBall.position.y > -10.1) {
+        if (Date.now() > time + 2000 && this.baseBall.position.y < -4.899 && this.baseBall.position.y > -5.1) {
             poinky.jump();
             time = Date.now();
         }
