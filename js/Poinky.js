@@ -119,6 +119,5 @@
             this.baseBallStrength, 12
             );
     }
-
     this.update();
 }
