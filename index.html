@@ -175,7 +175,7 @@
         document.body.appendChild(renderer.domElement);
 
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
-        camera.position.set(0, 0, 60);
+        camera.position.set(0, 45, 60);
         camera.lookAt(scene.position);
 
         // Physics World
@@ -185,7 +185,7 @@
         var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
         ground.addShape(new CANNON.Plane());
         ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -15, 0);
+        ground.position.set(0, -30, 0);
         world.add(ground);
 
         material = new THREE.ShaderMaterial({
@@ -262,13 +262,13 @@
         });
         sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
 
-        //var horizon = new THREE.MarchingCubes(resolution, material, true, true);
-        //horizon.position.set(0, 0, 0);
-        //horizon.scale.set(45, 20, 300);
-        //horizon.addPlaneY(2, 12);
+        var horizon = new THREE.MarchingCubes(resolution, material, true, true);
+        horizon.position.set(0, 0, 0);
+        horizon.scale.set(45, 20, 300);
+        horizon.addPlaneY(2, 12);
 
-        var horizon = new three.Mesh(new three.CubeGeometry(100, .5, 1000), material);
-        horizon.position.y = -15;
+        //var horizon = new three.Mesh(new three.CubeGeometry(100, .5, 1000), material);
+        //horizon.position.y = -15;
 
         //Fill scene
         scene.add(horizon);
