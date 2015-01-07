@@ -264,9 +264,10 @@
         horizon.position.set(0, 0, 0);
         horizon.scale.set(45, 20, 300);
         horizon.addPlaneY(2, 12);
+        horizon.resolution = 5;
 
-        var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
-        horizon.position.y = -12.1709;
+        //var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
+        //horizon.position.y = -12.1709;
 
         //Fill scene
         scene.add(horizon);
