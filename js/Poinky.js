@@ -7,9 +7,9 @@
     
     this.world = world;
     //changing those values change the shape of Poinky
-    this.baseBallStrength = 1.4;
-    this.midBallStrength = .8;
-    this.topBallStrength = 0.4;
+    this.baseBallStrength = .8;
+    this.midBallStrength = .4;
+    this.topBallStrength = 0.2;
 
     //Create physics
     this.material = new CANNON.Material("poinkyMaterial");
@@ -46,9 +46,9 @@
         that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
     }
 
-    setTimeout(function () {
-        setInterval(jump, 2000);
-    }, 2000);
+    //setTimeout(function () {
+    //    setInterval(jump, 2000);
+    //}, 2000);
 
     //this.hinge = new CANNON.HingeConstraint(this.baseBall, this.midBall, {
     //    pivotA: new CANNON.Vec3(0, 5, 0),
@@ -72,13 +72,13 @@
         baseBallPosition.y = (baseBallPosition.y + 1) / 2;
         baseBallPosition.z = (baseBallPosition.z + 1) / 2;
 
-        midBallPosition = new three.Vector3(this.midBall.position.x, this.midBall.position.y - 5, this.midBall.position.z);
+        midBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y - 5)/2, this.midBall.position.z);
         this.effect.worldToLocal(midBallPosition);
         midBallPosition.x = (midBallPosition.x + 1) / 2;
         midBallPosition.y = (midBallPosition.y + 1) / 2;
         midBallPosition.z = (midBallPosition.z + 1) / 2;
 
-        topBallPosition = new three.Vector3(this.midBall.position.x, this.midBall.position.y, this.midBall.position.z);
+        topBallPosition = new three.Vector3(this.midBall.position.x, this.midBall.position.y/2, this.midBall.position.z);
         this.effect.worldToLocal(topBallPosition);
         topBallPosition.x = (topBallPosition.x + 1) / 2;
         topBallPosition.y = (topBallPosition.y + 1) / 2;
