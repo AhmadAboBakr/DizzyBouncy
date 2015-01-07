@@ -42,13 +42,10 @@
 
 
     var flipper = -2000; // :D
-<<<<<<< HEAD
-    function jump() {
-=======
+
     var time = Date.now();
 
     this.jump = function () {
->>>>>>> d493e47e7c3c3f06a4d3d4c43a11b05922f94ada
         that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
     }
 

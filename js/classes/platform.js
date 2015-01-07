@@ -28,20 +28,28 @@
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
 
+    this.translate = function(x, y, z) {
+        this.body.position.set(this.x + x, this.y + y, this.z + z);
+    };
+
     this.update = function () {
         //this.body.applyForce(new CANNON.Vec3(0, 0, -20), this.body.position);
         //this.body.position.set(this.x, this.y, this.z - 0.1);
 
+        //Update the object's coordinates from the body
         this.x = this.body.position.x;
         this.y = this.body.position.y;
         this.z = this.body.position.z;
 
         this.body.updateMassProperties();
-    }
+    };
 
     this.draw = function () {
         this.mesh.position.copy(this.body.position);
-        //nothing so far
-    }
+    };
 
+    this.remove = function () {
+        this.world.remove(this.body);
+        this.scene.remove(this.mesh);
+    };
 }

@@ -272,8 +272,8 @@
         });
         world.addContactMaterial(platformPoinkyContact);
 
-        var testPlatform = new Platform(0, -12, 0, 30, 3, 12, world, platformsMaterial, scene);
-        
+        var platformManager = new PlatformManager(50, 100, world, platformPoinkyContact, scene);
+
         var stats = new Stats();
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.top = '1px';
@@ -300,9 +300,7 @@
         setInterval(update, timeStep * 1000);
         function update() {
             poinky.update();
-
-            testPlatform.update();
-
+            platformManager.update();
             world.step(timeStep);
             stats.update();
         };
@@ -312,7 +310,7 @@
             effect.reset();
             effect.addPlaneY(3.0, 12);
             poinky.draw();
-            testPlatform.draw();
+            platformManager.draw();
             renderer.render(scene, camera);
         };
 
