@@ -261,6 +261,7 @@
 
         });
         sphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+        var skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), sphereMaterial);
 
         var horizon = new THREE.MarchingCubes(resolution, material, true, true);
         horizon.position.set(0, 0, 0);
@@ -274,15 +275,13 @@
         scene.add(horizon);
         scene.add(effect);
         scene.add(camera);
-
+        scene.add(skySphere);
         //Start
         requestAnimationFrame(render);
-
         function update() {
             poinky.update();
             world.step(timeStep);
-            stats.update();
-            
+            stats.update();  
         };
 
         function render() {
