@@ -161,6 +161,10 @@
 
 </head>
 <body>
+    <audio id="jumpfx" style="display:none;">
+        <source src="sfx/boing.wav" />
+    </audio>
+
     <script>
         "use strict";
 
@@ -262,7 +266,10 @@
 
 
         //Create Poinky
-        var poinky = new Poinky(-9, 5, effect, world);
+        var jumpfx = document.getElementById("jumpfx");
+        
+        var poinky = new Poinky(-9, 5, effect, world, jumpfx);
+
 
         // Adjust constraint equation parameters for ground/poinky contact
         var groundPoinkyContact = new CANNON.ContactMaterial(groundMaterial, poinky.material, {

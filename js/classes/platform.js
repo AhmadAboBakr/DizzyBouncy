@@ -1,6 +1,5 @@
 ﻿function Platform(x, y, z, width, height, depth, world, physicsMaterial, scene, renderMaterial) {
     var that = this;
-    console.log(renderMaterial);
     //Config
     this.x = x;
     this.y = y;
