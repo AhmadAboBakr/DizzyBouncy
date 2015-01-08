@@ -164,7 +164,9 @@
     <audio id="jumpfx" style="display:none;">
         <source src="sfx/boing.wav" />
     </audio>
-
+    <audio id="music" controls="controls" style="display:none;" loop>
+        <source src="sfx/Music.mp3" type="audio/mpeg" />
+    </audio>
     <script>
         "use strict";
 
@@ -352,8 +354,8 @@
 
         //Start
         requestAnimationFrame(render);
-
-
+        var music = document.getElementById("music");
+        music.play();
         var rightPressed = false;
         var leftPressed = false;
         function update() {
@@ -398,7 +400,6 @@
                     break;
             }
         };
-
     </script>
 
 </body>
