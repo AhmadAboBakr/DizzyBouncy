@@ -363,9 +363,9 @@
         var leftPressed = false;
         function update() {
             if (rightPressed)
-                manager.movePlatforms(0.6);
-            if (leftPressed)
                 manager.movePlatforms(-0.6);
+            if (leftPressed)
+                manager.movePlatforms(0.6);
             poinky.update();
             if (poinky.score != score.innerText) {
                 score.innerText = poinky.score;
