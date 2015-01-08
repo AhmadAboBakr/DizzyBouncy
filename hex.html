@@ -17,7 +17,7 @@
         varying vec3 vONormal;
         varying vec3 vU;
         varying vec3 vEye;
-
+        uniform bool cylenderazie;
         void main() {
         vOPosition = modelViewMatrix * vec4( position, 1.0 );
         vec4 LinearPosition=projectionMatrix * vOPosition;
@@ -26,10 +26,13 @@
         float z = LinearPosition.z;
         float theta=atan(y,x);
         float r=sqrt(x*x+y*y);
-        vec3 kotomoto= vec3( r*cos(x*3.1415926) , r*sin(x*3.1415926) , position.z);
-        r*=2.0;
-        gl_Position = vec4( r*cos(x*3.1415926) , r*sin(x*3.1415926) , z , LinearPosition.w);
-
+        r*=3.0;
+        if(y<-17.8){
+            gl_Position = vec4( r*cos(x*3.1415926) , r*sin(x*3.1415926) , z , LinearPosition.w);
+        }
+        else{
+            gl_Position = vec4( x , y , z , LinearPosition.w);
+        }
         vU = normalize( vec3( modelViewMatrix * vec4( position, 1.0 ) ) );
 
         vPosition = vec4( position, 1.0 );
@@ -230,8 +233,8 @@
 
         var resolution = 35;
         var effect = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
-        effect.position.set(0, 0, 0);
-        effect.scale.set(15, 15, 30);
+        effect.position.set(0, -1.7, 0);
+        effect.scale.set(10, 10, 10);
         effect.isolation = 60;
 
         //endeffect
@@ -271,11 +274,6 @@
         skySphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
         var skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
 
-        var horizon = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
-        horizon.position.set(0, 0, 0);
-        horizon.scale.set(45, 20, 300);
-        horizon.addPlaneY(2, 12);
-
         var platformsMaterial = new CANNON.Material("platformMaterial");
         var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
             friction: 1,
@@ -298,11 +296,15 @@
         });
         console.log(platformRenderingMaterial);
         var manager = new PlatformManager(50, 100, world, platformPoinkyContact, scene, poinkyMaterial);
+
+        var horizon = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
+        horizon.position.set(0, 0, 0);
+        horizon.scale.set(45, 20, 300);
+        horizon.addPlaneY(2, 12);
+
         //Fill scene
-        var test = new three.Mesh(new three.CubeGeometry(50, 50, 50), poinkyMaterial);
-        scene.add(test);
         scene.add(horizon);
-        //scene.add(effect);
+        scene.add(effect);
         scene.add(camera);
         scene.add(skySphere);
 
