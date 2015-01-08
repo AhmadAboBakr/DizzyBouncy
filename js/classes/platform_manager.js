@@ -12,9 +12,9 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     this.platformsMaterial = PhysicsMaterial || new CANNON.Material("platformMaterial");
     this.renderMaterial = renderMaterial;
     //Globals
-    this.scrollSpeed = 0.5;
+    this.scrollSpeed = 0.1;
     this.sidewaySpeed = 30;
-    this.platformsGap = 20;
+    this.platformsGap = 30;
 
     //Platforms array
     this.platforms = [];
@@ -24,7 +24,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? 0 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
         var xPos = that.platforms.length == 1 ? 0 : Math.random() * (that.sceneWidth) - that.sceneWidth / 2;
-        that.platforms.push(new Platform(xPos, -10, zPos, 20, .1, 12, world, platformsMaterial, scene, that.renderMaterial));
+        that.platforms.push(new Platform(xPos, -10, zPos, 12, 0.5, 6.5, world, platformsMaterial, scene, that.renderMaterial));
         console.log("created a platform", zPos);
     }
 

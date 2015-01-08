@@ -15,7 +15,7 @@
     this.material = new CANNON.Material("poinkyMaterial");
 
     this.baseBall = new CANNON.Body({ mass: 10, material: this.material });
-    this.baseBall.addShape(new CANNON.Sphere(5));
+    this.baseBall.addShape(new CANNON.Sphere(1.5));
     this.baseBall.position.set(x, y + 5, 0);
     this.baseBall.fixedRotation = true;
     this.world.add(this.baseBall);
@@ -23,7 +23,7 @@
 
     this.midMaterial = new CANNON.Material("midMaterial");
     this.midBall = new CANNON.Body({ mass: 0.1, material: this.midMaterial });
-    this.midBall.addShape(new CANNON.Sphere(5));
+    this.midBall.addShape(new CANNON.Sphere(1.5));
     this.midBall.position.set(x, y + 15, 0);
     this.midBall.fixedRotation = true;
     this.world.add(this.midBall);
