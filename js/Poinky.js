@@ -1,11 +1,11 @@
-﻿function Poinky(x, y, effect, world) {
+﻿function Poinky(x, y, effect, world,jumpfx) {
     var that = this;
 
     //Config
     this.effect = effect;
     this.world = world;
     this.onJump = null;
-
+    this.jumpfx= jumpfx;
     //changing those values change the shape of Poinky
     this.baseBallStrength = .8;
     this.midBallStrength = .5;
@@ -47,10 +47,10 @@
     var time = Date.now();
     this.jump = function () {
         if (!that.jumping) {
-            
             this.baseBall.velocity.y = 0;
             this.baseBall.velocity.x = 0;
             this.baseBall.velocity.z = 0;
+            this.jumpfx.play();
             that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
             that.jumping = true;
 
