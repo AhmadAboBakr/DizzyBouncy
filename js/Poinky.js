@@ -32,8 +32,8 @@
         localAnchorA: new CANNON.Vec3(0, 5, 0),
         localAnchorB: new CANNON.Vec3(0, 0, 0),
         restLength: 5,
-        stiffness: 150,
-        damping: 0.5,
+        stiffness: 190,
+        damping: 0.8,
     });
 
     this.world.addEventListener("postStep", function (event) {
