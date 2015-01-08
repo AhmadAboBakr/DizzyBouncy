@@ -3,19 +3,20 @@
 
     //Config
     this.effect = effect;
-    /// <var type="CANNON.World"/>
-    
     this.world = world;
+    this.onJump = null;
+
     //changing those values change the shape of Poinky
     this.baseBallStrength = .8;
     this.midBallStrength = .5;
     this.topBallStrength = 0.3;
     this.jumping = false;
+
     //Create physics
     this.material = new CANNON.Material("poinkyMaterial");
 
     this.baseBall = new CANNON.Body({ mass: 10, material: this.material });
-    this.baseBall.addShape(new CANNON.Sphere(1.5));
+    this.baseBall.addShape(new CANNON.Sphere(3));
     this.baseBall.position.set(x, y + 5, 0);
     this.baseBall.fixedRotation = true;
     this.world.add(this.baseBall);
@@ -23,7 +24,7 @@
 
     this.midMaterial = new CANNON.Material("midMaterial");
     this.midBall = new CANNON.Body({ mass: 0.1, material: this.midMaterial });
-    this.midBall.addShape(new CANNON.Sphere(1.5));
+    this.midBall.addShape(new CANNON.Sphere(3));
     this.midBall.position.set(x, y + 15, 0);
     this.midBall.fixedRotation = true;
     this.world.add(this.midBall);
@@ -53,6 +54,9 @@
 
             that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
             that.jumping = true;
+
+            if (this.onJump)
+                this.onJump();
         }
     }
 
@@ -68,7 +72,6 @@
     //this.world.addConstraint(this.hinge);
     var baseBallPosition, midBallPosition, topBallPosition;
     this.update = function () {
-        console.log(this.baseBall.velocity.y );
         if (Date.now() > time + 2000 && this.baseBall.position.y < -4.899 && this.baseBall.position.y > -5.1) {
             //poinky.jump();
             time = Date.now();
@@ -76,12 +79,15 @@
 
         //Physics
         this.midBall.applyForce(new CANNON.Vec3(2, 150, 0), this.midBall.position);
-        this.baseBall.updateMassProperties();
-        this.midBall.updateMassProperties();
 
         this.baseBall.addEventListener("collide", function (event) {
             that.jump();
         });
+
+
+        this.baseBall.updateMassProperties();
+        this.midBall.updateMassProperties();
+
         //Marching Balls
         baseBallPosition = new three.Vector3(this.baseBall.position.x, this.baseBall.position.y, this.baseBall.position.z);
         this.effect.worldToLocal(baseBallPosition);

@@ -11,21 +11,23 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
 
     this.platformsMaterial = PhysicsMaterial || new CANNON.Material("platformMaterial");
     this.renderMaterial = renderMaterial;
+
     //Globals
     this.scrollSpeed = 0.9;
     this.sidewaySpeed = 30;
-    this.platformsGap = 12;
+    this.platformsGap = 20;
 
     //Platforms array
     this.platforms = [];
 
+    //Set the next platform to the one beneath poinky
+    var nextPlatformIndex = 0;
 
     function createPlatform() {
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? 0 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
-        var xPos = that.platforms.length == 1 ? 0 : Math.random() * (that.sceneWidth) - that.sceneWidth / 2;
+        var xPos = that.platforms.length == 0 ? 0 : Math.random() * (that.sceneWidth) - that.sceneWidth / 2;
         that.platforms.push(new Platform(xPos, -10, zPos, 12, 0.5, 6.5, world, platformsMaterial, scene, that.renderMaterial));
-        console.log("created a platform", zPos);
     }
 
     function shouldCreate() {
@@ -40,6 +42,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
         //Optimize by moving the cube back instead of deleting it and creating a new one
         that.platforms[0].remove();
         that.platforms.splice(0, 1);
+        --nextPlatformIndex;
     }
 
     function updatePlatforms() {
@@ -53,10 +56,11 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
 
     this.update = function () {
         updatePlatforms();
-        for (var i = 0; i < this.platforms.length; i++) {
-            this.platforms[i].translate(0, 0, this.scrollSpeed);
-            this.platforms[i].update();
-        }
+        if(this.platforms[nextPlatformIndex].z < 0)
+            for (var i = 0; i < this.platforms.length; i++) {
+                this.platforms[i].translate(0, 0, this.scrollSpeed);
+                this.platforms[i].update();
+            }
     }
     this.movePlatforms = function (x) {
         for (var i = 0; i < this.platforms.length; i++) {
@@ -70,11 +74,16 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
             this.platforms[i].draw();
     }
 
-    //precreate a full blocks cycle
+    this.scrollPlatforms = function () {
+        nextPlatformIndex++;
+    };
+
+    //precreate blocks until they reach poinky
     var prevLen = 0;
     while(this.platforms.length != prevLen)
     {
         prevLen = this.platforms.length;
         updatePlatforms();
     }
+
 }

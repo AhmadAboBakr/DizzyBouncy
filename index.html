@@ -282,6 +282,10 @@
 
         var manager = new PlatformManager(50, 350, world, platformPoinkyContact, scene, null);
 
+        poinky.onJump = function () {
+            manager.scrollPlatforms();
+        };
+
         var light = new THREE.DirectionalLight(0xFFFFFF);
         light.position.set(20, 40, 15);
         light.target.position.copy(scene.position);
@@ -324,6 +328,7 @@
             stats.update();
             manager.update();           
         };
+
         function render() {
             requestAnimationFrame(render);
             update();
