@@ -22,9 +22,9 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
 
     function createPlatform() {
         //calculate position from gap
-        var zPos = that.platforms.length == 0 ? -sceneWidth / 2 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
-        var xPos = Math.random() * (50)-25;
-        that.platforms.push(new Platform(xPos, -10, zPos, 15, .1, 12, world, platformsMaterial, scene, that.renderMaterial));
+        var zPos = that.platforms.length == 0 ? 0 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
+        var xPos = that.platforms.length == 1 ? 0 : Math.random() * (that.sceneWidth) - that.sceneWidth / 2;
+        that.platforms.push(new Platform(xPos, -10, zPos, 20, .1, 12, world, platformsMaterial, scene, that.renderMaterial));
         console.log("created a platform", zPos);
     }
 
@@ -70,4 +70,11 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
             this.platforms[i].draw();
     }
 
+    //precreate a full blocks cycle
+    var prevLen = 0;
+    while(this.platforms.length != prevLen)
+    {
+        prevLen = this.platforms.length;
+        updatePlatforms();
+    }
 }
