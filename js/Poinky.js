@@ -35,7 +35,7 @@
         localAnchorB: new CANNON.Vec3(0, 0, 0),
         restLength: 4,
         stiffness: 120,
-        damping: 0.4,
+        damping: 0.9,
     });
 
     this.world.addEventListener("postStep", function (event) {
@@ -113,7 +113,7 @@
         topBallPosition.z = (topBallPosition.z + 1) / 2;
 
         x = this.baseBall.x;
-        y = this.baseBall.y + 5;
+        y = this.baseBall.y + 3;
         z = this.baseBall.z;
         if (this.baseBall.velocity.y < .05) this.jumping = false;
     }
