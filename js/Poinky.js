@@ -10,7 +10,7 @@
     this.baseBallStrength = .8;
     this.midBallStrength = .5;
     this.topBallStrength = 0.3;
-
+    this.jumping = false;
     //Create physics
     this.material = new CANNON.Material("poinkyMaterial");
 
@@ -44,9 +44,16 @@
     var flipper = -2000; // :D
 
     var time = Date.now();
-
     this.jump = function () {
-        that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
+        if (!that.jumping) {
+            
+            this.baseBall.velocity.y = 0;
+            this.baseBall.velocity.x = 0;
+            this.baseBall.velocity.z = 0;
+
+            that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
+            that.jumping = true;
+        }
     }
 
     //setTimeout(function () {
@@ -61,8 +68,9 @@
     //this.world.addConstraint(this.hinge);
     var baseBallPosition, midBallPosition, topBallPosition;
     this.update = function () {
+        console.log(this.baseBall.velocity.y );
         if (Date.now() > time + 2000 && this.baseBall.position.y < -4.899 && this.baseBall.position.y > -5.1) {
-            poinky.jump();
+            //poinky.jump();
             time = Date.now();
         }
 
@@ -71,6 +79,9 @@
         this.baseBall.updateMassProperties();
         this.midBall.updateMassProperties();
 
+        this.baseBall.addEventListener("collide", function (event) {
+            that.jump();
+        });
         //Marching Balls
         baseBallPosition = new three.Vector3(this.baseBall.position.x, this.baseBall.position.y, this.baseBall.position.z);
         this.effect.worldToLocal(baseBallPosition);
@@ -93,6 +104,7 @@
         x = this.baseBall.x;
         y = this.baseBall.y + 5;
         z = this.baseBall.z;
+        if (this.baseBall.velocity.y < .05) this.jumping = false;
     }
 
     this.draw = function () {

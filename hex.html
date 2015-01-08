@@ -27,7 +27,7 @@
         float theta=atan(y,x);
         float r=sqrt(x*x+y*y);
         r*=3.0;
-        if(y<-17.8){
+        if(y<-17.65021035){
             gl_Position = vec4( r*cos(x*3.1415926) , r*sin(x*3.1415926) , z , LinearPosition.w);
         }
         else{
@@ -303,7 +303,7 @@
         horizon.addPlaneY(2, 12);
 
         //Fill scene
-        scene.add(horizon);
+        //scene.add(horizon);
         scene.add(effect);
         scene.add(camera);
         scene.add(skySphere);
