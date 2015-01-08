@@ -291,7 +291,16 @@
         //Start
         requestAnimationFrame(render);
 
+
+        var rightPressed = false;
+        var leftPressed = false;
         function update() {
+            if (rightPressed)
+                manager.movePlatforms(0.6);
+
+            if (leftPressed)
+                manager.movePlatforms(-0.6);
+
             poinky.update();
             world.step(timeStep);
             stats.update();
@@ -307,13 +316,25 @@
             manager.draw();
             renderer.render(scene, camera);
         };
+
         document.onkeydown = function (key) {
             switch (key.keyCode) {
                 case 39:
-                    manager.movePlatforms(2);
+                    rightPressed = true;
                     break;
                 case 37:
-                    manager.movePlatforms(-2);
+                    leftPressed = true;
+                    break;
+            }
+        };
+
+        document.onkeyup = function (key) {
+            switch (key.keyCode) {
+                case 39:
+                    rightPressed = false;
+                    break;
+                case 37:
+                    leftPressed = false;
                     break;
             }
         };
