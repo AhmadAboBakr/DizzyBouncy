@@ -33,9 +33,9 @@
     this.spring = new CANNON.Spring(this.baseBall, this.midBall, {
         localAnchorA: new CANNON.Vec3(0, 3, 0),
         localAnchorB: new CANNON.Vec3(0, 0, 0),
-        restLength: 4,
+        restLength: 3,
         stiffness: 120,
-        damping: 0.9,
+        damping: 0.75,
     });
 
     this.world.addEventListener("postStep", function (event) {
@@ -72,6 +72,7 @@
     //this.world.addConstraint(this.hinge);
     var baseBallPosition, midBallPosition, topBallPosition;
     this.update = function () {
+        console.log(this.midBall.velocity);
         this.baseBall.velocity.z = 0;
         this.baseBall.position.z = 0;
 
@@ -100,13 +101,13 @@
         baseBallPosition.y = (baseBallPosition.y + 1) / 2;
         baseBallPosition.z = (baseBallPosition.z + 1) / 2;
 
-        midBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y - 2)/2, this.midBall.position.z);
+        midBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y -2)/2, this.midBall.position.z);
         this.effect.worldToLocal(midBallPosition);
         midBallPosition.x = (midBallPosition.x + 1) / 2;
         midBallPosition.y = (midBallPosition.y + 1) / 2;
         midBallPosition.z = (midBallPosition.z + 1) / 2;
 
-        topBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y + 3)/2, this.midBall.position.z);
+        topBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y + 6)/2, this.midBall.position.z);
         this.effect.worldToLocal(topBallPosition);
         topBallPosition.x = (topBallPosition.x + 1) / 2;
         topBallPosition.y = (topBallPosition.y + 1) / 2;
