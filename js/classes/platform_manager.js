@@ -12,9 +12,9 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     this.platformsMaterial = PhysicsMaterial || new CANNON.Material("platformMaterial");
     this.renderMaterial = renderMaterial;
     //Globals
-    this.scrollSpeed = 0.1;
+    this.scrollSpeed = 0.9;
     this.sidewaySpeed = 30;
-    this.platformsGap = 30;
+    this.platformsGap = 12;
 
     //Platforms array
     this.platforms = [];
