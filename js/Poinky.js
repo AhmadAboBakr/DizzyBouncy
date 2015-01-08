@@ -1,9 +1,10 @@
-﻿function Poinky(x, y, effect, world,jumpfx) {
-    var that = this;
+﻿function Poinky(x, y, effect, world, jumpfx) {
 
+    var that = this;
     //Config
     this.effect = effect;
     this.world = world;
+    this.score = 0;
     this.onJump = null;
     this.jumpfx= jumpfx;
     //changing those values change the shape of Poinky
@@ -48,6 +49,7 @@
     var time = Date.now();
     this.jump = function () {
         if (!that.jumping) {
+            this.score++;
             this.baseBall.velocity.y = 0;
             this.baseBall.velocity.x = 0;
             this.baseBall.velocity.z = 0;

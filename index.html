@@ -167,6 +167,7 @@
     <audio id="music" controls="controls" style="display:none;" loop>
         <source src="sfx/Music.mp3" type="audio/mpeg" />
     </audio>
+    <div id="score" style="position:absolute;top:20px;left:100px;"></div>
     <script>
         "use strict";
 
@@ -351,11 +352,13 @@
         scene.add(effect);
         scene.add(camera);
         scene.add(skySphere);
-
+        
         //Start
+        var score = document.getElementById("score");
         requestAnimationFrame(render);
         var music = document.getElementById("music");
         music.play();
+
         var rightPressed = false;
         var leftPressed = false;
         function update() {
@@ -364,6 +367,9 @@
             if (leftPressed)
                 manager.movePlatforms(-0.6);
             poinky.update();
+            if (poinky.score != score.innerText) {
+                score.innerText = poinky.score;
+            }
             world.step(timeStep);
             stats.update();
             manager.update();           
