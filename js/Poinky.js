@@ -27,14 +27,15 @@
     this.midBall.addShape(new CANNON.Sphere(3));
     this.midBall.position.set(x, y + 15, 0);
     this.midBall.fixedRotation = true;
+    //this.midBall.collisionFilterMask = 0;    //Prevent poinky from contacting himself
     this.world.add(this.midBall);
 
     this.spring = new CANNON.Spring(this.baseBall, this.midBall, {
-        localAnchorA: new CANNON.Vec3(0, 5, 0),
+        localAnchorA: new CANNON.Vec3(0, 3, 0),
         localAnchorB: new CANNON.Vec3(0, 0, 0),
-        restLength: 5,
-        stiffness: 190,
-        damping: 0.8,
+        restLength: 4,
+        stiffness: 120,
+        damping: 0.4,
     });
 
     this.world.addEventListener("postStep", function (event) {
@@ -83,7 +84,9 @@
         this.midBall.applyForce(new CANNON.Vec3(2, 150, 0), this.midBall.position);
 
         this.baseBall.addEventListener("collide", function (event) {
-            that.jump();
+            //console.log(event.body.material);
+            if(event.body.material.name == "platformMaterial")
+                that.jump();
         });
 
 
@@ -97,13 +100,13 @@
         baseBallPosition.y = (baseBallPosition.y + 1) / 2;
         baseBallPosition.z = (baseBallPosition.z + 1) / 2;
 
-        midBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y - 5)/2, this.midBall.position.z);
+        midBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y - 2)/2, this.midBall.position.z);
         this.effect.worldToLocal(midBallPosition);
         midBallPosition.x = (midBallPosition.x + 1) / 2;
         midBallPosition.y = (midBallPosition.y + 1) / 2;
         midBallPosition.z = (midBallPosition.z + 1) / 2;
 
-        topBallPosition = new three.Vector3(this.midBall.position.x, this.midBall.position.y/2, this.midBall.position.z);
+        topBallPosition = new three.Vector3(this.midBall.position.x, (this.midBall.position.y + 3)/2, this.midBall.position.z);
         this.effect.worldToLocal(topBallPosition);
         topBallPosition.x = (topBallPosition.x + 1) / 2;
         topBallPosition.y = (topBallPosition.y + 1) / 2;
@@ -120,12 +123,12 @@
         this.effect.position.x = this.baseBall.position.x;
         this.effect.position.z = this.baseBall.position.z;
 
-        //this.effect.addBall(
-        //    topBallPosition.x,
-        //    topBallPosition.y,
-        //    topBallPosition.z,
-        //    this.topBallStrength, 12
-        //    );
+        this.effect.addBall(
+            topBallPosition.x,
+            topBallPosition.y,
+            topBallPosition.z,
+            this.topBallStrength, 12
+            );
         this.effect.addBall(
             midBallPosition.x,
             midBallPosition.y,
