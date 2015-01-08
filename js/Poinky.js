@@ -50,7 +50,6 @@
             this.baseBall.velocity.y = 0;
             this.baseBall.velocity.x = 0;
             this.baseBall.velocity.z = 0;
-
             that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
             that.jumping = true;
         }

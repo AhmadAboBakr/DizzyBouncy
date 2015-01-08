@@ -21,7 +21,14 @@
         void main() {
 
         vOPosition = modelViewMatrix * vec4( position, 1.0 );
-        gl_Position = projectionMatrix * vOPosition;
+        vec4 LinearPosition=projectionMatrix * vOPosition;
+        float x=LinearPosition.x;
+        float y=LinearPosition.y;
+        float z = LinearPosition.z;
+        if(abs(LinearPosition.x)>40.0){
+            LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        }
+        gl_Position = LinearPosition;
 
         vU = normalize( vec3( modelViewMatrix * vec4( position, 1.0 ) ) );
 
@@ -190,8 +197,32 @@
         ground.position.set(0, -40, 0);
         world.add(ground);
 
-        var poinkyMaterial = new THREE.ShaderMaterial({
+        //platform material
+        var platformRenderingMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                textureMap: { type: 't', value: null },
+                normalMap: { type: 't', value: null },
+                normalScale: { type: 'f', value: 1 },
+                texScale: { type: 'f', value: 5 },
+                useSSS: { type: 'f', value: 1 },
+                useScreen: { type: 'f', value: 0 },
+                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
+            },
+            vertexShader: document.getElementById('vertexShader').textContent,
+            fragmentShader: document.getElementById('fragmentShader').textContent,
+            side: THREE.FrontSide
+        });
+        platformRenderingMaterial.uniforms.normalScale.value = .5;
+        platformRenderingMaterial.uniforms.texScale.value = 10;
+        platformRenderingMaterial.uniforms.useSSS.value = .15;
+        platformRenderingMaterial.uniforms.useScreen.value = .3;
+        platformRenderingMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap1.jpg');
+        platformRenderingMaterial.uniforms.textureMap.value.wrapS = platformRenderingMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
+        //platformRenderingMaterial.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('723-normal.jpg');
+        //platformRenderingMaterial.uniforms.normalMap.value.wrapS = platformRenderingMaterial.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
 
+        //poinky Material
+        var poinkyMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 textureMap: { type: 't', value: null },
                 normalMap: { type: 't', value: null },
@@ -267,7 +298,7 @@
 
         var horizon = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
         horizon.position.set(0, 0, 0);
-        horizon.scale.set(45, 20, 300);
+        horizon.scale.set(100, 20, 300);
         horizon.addPlaneY(2, 12);
         var platformsMaterial = new CANNON.Material("platformMaterial");
         var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
@@ -280,7 +311,9 @@
         });
         world.addContactMaterial(platformPoinkyContact);
 
-        var manager = new PlatformManager(50, 350, world, platformPoinkyContact, scene, null);
+
+
+        var manager = new PlatformManager(50, 100, world, platformPoinkyContact, scene, platformRenderingMaterial);
 
         var light = new THREE.DirectionalLight(0xFFFFFF);
         light.position.set(20, 40, 15);
@@ -315,10 +348,8 @@
         function update() {
             if (rightPressed)
                 manager.movePlatforms(0.6);
-
             if (leftPressed)
                 manager.movePlatforms(-0.6);
-
             poinky.update();
             world.step(timeStep);
             stats.update();
