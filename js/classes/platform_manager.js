@@ -77,13 +77,10 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
             }
 
         //Apply player movement
-        //console.log(Math.abs(targetTranslation - currentTranslation));
-        //console.log(startingTranslation);
         if(Math.abs(targetTranslation-currentTranslation) > 0.1)
         {
             var t = Date.now() - translationStart; //msec
             var easedTranslation = EaseInOutCubic(t*1.2, currentTranslation, targetTranslation - currentTranslation, 2000); //2 sec
-            console.log(startingTranslation, easedTranslation, targetTranslation);
             for (var i = 0; i < this.platforms.length; i++) {
                 this.platforms[i].translate(-currentTranslation, 0, 0);
                 this.platforms[i].update();

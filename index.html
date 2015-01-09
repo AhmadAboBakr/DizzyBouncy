@@ -6,11 +6,17 @@
     <script src="js/stats.js"></script>
     <script src="js/cannon.js"></script>
     <script src="js/MarchingCubes.js"></script>
+
+    <script src="js/Tween.js"></script>
+    <script src="js/Sparks.js"></script>
+    <script src="js/CanvasShaders.js"></script>
+    <script src="js/classes/splash.js"></script>
+
     <script src="js/classes/platform.js"></script>
     <script src="js/classes/platform_manager.js"></script>
     <script src="js/classes/Poinky.js"></script>
-    <script type="x-shader/x-vertex" id="vertexShader">
 
+    <script type="x-shader/x-vertex" id="vertexShader">
         varying vec3 vNormal;
         varying vec4 vPosition;
         varying vec4 vOPosition;
@@ -320,6 +326,7 @@
             manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
             startGame();
         }
+
         function populateScene() {
             var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
             horizon.position.set(0, 0, 0);
@@ -334,6 +341,7 @@
             scene.add(camera);
             scene.add(skySphere);
         }
+
         initThree();
         LoadShaders();
         initCanon();
@@ -371,6 +379,9 @@
 
         poinky.onJump = function () {
             manager.scrollPlatforms();
+
+            //create particles
+            (new Splash(poinky.x, poinky.y - 3, poinky.z, scene)).start();
         };
         populateScene();
         requestAnimationFrame(render);

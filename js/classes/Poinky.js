@@ -48,14 +48,14 @@
 
     var time = Date.now();
     this.jump = function () {
-        if (!that.jumping) {
+        if (!this.jumping) {
             this.score++;
             this.baseBall.velocity.y = 0;
             this.baseBall.velocity.x = 0;
             this.baseBall.velocity.z = 0;
             this.jumpfx.play();
-            that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
-            that.jumping = true;
+            this.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), this.baseBall.position);
+            this.jumping = true;
 
             if (this.onJump)
                 this.onJump();
@@ -84,7 +84,7 @@
         if (this.baseBall.velocity.norm() > 130) {
             this.baseBall.velocity.normalize();
             this.baseBall.velocity = this.baseBall.velocity.scale(130, this.baseBall.velocity);
-            console.log(this.baseBall.velocity);
+            //console.log(this.baseBall.velocity);
         }
 
         if (Date.now() > time + 2000 && this.baseBall.position.y < -4.899 && this.baseBall.position.y > -5.1) {
