@@ -23,8 +23,7 @@
 
     //Create display
     this.material = this.renderMaterial;
-
-    this.geometry = new THREE.BoxGeometry(this.width * 2, this.height * 2, this.depth * 2,4);
+    this.geometry = new THREE.BoxGeometry(this.width * 2, this.height * 2, this.depth * 2,7);
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
 

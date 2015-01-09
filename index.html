@@ -32,16 +32,16 @@
         float y=LinearPosition.y;
         float z = LinearPosition.z;
         if(abs(LinearPosition.x)>100.0){
-            LinearPosition.y-=abs(LinearPosition.x)*9.0-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)*9.0-40.0;
         }
         else if(abs(LinearPosition.x)>70.0){
-            LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
         }
         else if(abs(LinearPosition.x)>60.0){
-            LinearPosition.y-=abs(LinearPosition.x)*1.5-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)*1.2-40.0;
         }
         else if(abs(LinearPosition.x)>40.0){
-            LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)-40.0;
         }
         gl_Position = LinearPosition;
 
@@ -243,7 +243,7 @@
         //controls
         var rightPressed;
         var leftPressed;
-
+        var highFrameRate = true;
         var menu;
 
         function init() {
@@ -362,9 +362,9 @@
             poinky = new Poinky(-9, 5, effect, world, jumpfx);
             poinky.onJump = function () {
                 manager.scrollPlatforms();
-                
                 //create particles
-                (new Splash(poinky.baseBall.position.x, poinky.baseBall.position.y, poinky.baseBall.position.z, scene)).start();
+                if (highFrameRate)
+                    (new Splash(poinky.baseBall.position.x, poinky.baseBall.position.y, poinky.baseBall.position.z, scene)).start();
             };
             poinky.onDeath = function () {
                 menu.style.display = "block";
@@ -373,7 +373,7 @@
             }
 
         }
-        
+
         function reset() {
             menu.style.display = "none";
             score.style.display = "block";
@@ -430,7 +430,7 @@
         });
         world.addContactMaterial(platformPoinkyContact);
         skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
-        manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
+        manager = new PlatformManager(50, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
 
         populateScene();
         requestAnimationFrame(render);
@@ -443,8 +443,10 @@
             if (poinky.score != score.innerText) {
                 score.innerText = poinky.score;
             }
+            if (parseInt(stats.domElement.innerText) < 50) highFrameRate = false;
             world.step(timeStep);
             stats.update();
+            console.log(stats);
             manager.update();
         };
         function render() {
@@ -480,6 +482,6 @@
             }
         };
     </script>
-    
+
 </body>
 </html>
