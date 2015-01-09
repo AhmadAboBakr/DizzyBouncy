@@ -41,7 +41,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
 		}
 		
 
-        that.platforms.push(new Platform(xPos, -10, zPos, 12, 0.5, 6.5, world, platformsMaterial, scene, that.renderMaterial));
+        that.platforms.push(new Platform(xPos, -13.5, zPos, 12, 4, 6.5, world, platformsMaterial, scene, that.renderMaterial));
     }
 
     function shouldCreate() {
