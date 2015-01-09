@@ -39,7 +39,13 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     function shouldDestory() {
         return that.platforms[0].z > sceneDepth / 2;
     }
-
+    this.reset = function () {
+        for (var i = 0; i < this.platforms.length; i++) {
+            this.platforms[i].remove();
+        }
+        this.platforms = [];
+        createPlatform();
+    }
     function destoryPlatform() {
         //Optimize by moving the cube back instead of deleting it and creating a new one
         that.platforms[0].remove();
@@ -83,6 +89,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
         {
             var t = Date.now() - translationStart; //msec
             var easedTranslation = EaseInOutCubic(t*1.2, currentTranslation, targetTranslation - currentTranslation, 2000); //2 sec
+
             for (var i = 0; i < this.platforms.length; i++) {
                 this.platforms[i].translate(-currentTranslation, 0, 0);
                 this.platforms[i].update();

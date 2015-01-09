@@ -1,18 +1,19 @@
 ﻿function Poinky(x, y, effect, world, jumpfx) {
-
     var that = this;
+    this.initialPosition = new THREE.Vector2(x, y);
     //Config
     this.effect = effect;
     this.world = world;
     this.score = 0;
     this.onJump = null;
+    this.onDeath = null;
     this.jumpfx= jumpfx;
     //changing those values change the shape of Poinky
     this.baseBallStrength = .8;
     this.midBallStrength = .5;
     this.topBallStrength = 0.3;
     this.jumping = false;
-
+    this.firstIteration = false;
     //Create physics
     this.material = new CANNON.Material("poinkyMaterial");
 
@@ -44,9 +45,8 @@
     });
 
 
-    var flipper = -2000; // :D
+    var flipper = -2100; // :D
 
-    var time = Date.now();
     this.jump = function () {
         if (!this.jumping) {
             this.score++;
@@ -57,11 +57,21 @@
             this.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), this.baseBall.position);
             this.jumping = true;
 
-            if (this.onJump)
-                this.onJump();
-        }
+            if (this.onJump) {
+                if (!this.firstIteration)
+                    this.onJump();
+                else
+                    this.firstIteration = false;
+            }
+                        }
     }
-
+    this.reset = function () {
+        this.baseBall.position.set(this.initialPosition.x, this.initialPosition.y + 5, 0);
+        this.midBall.position.set(this.initialPosition.x,this.initialPosition.y + 15, 0);
+        this.score = 0; 
+        this.firstIteration= true;
+        this.update();
+    }
     //setTimeout(function () {
     //    setInterval(jump, 2000);
     //}, 2000);
@@ -80,25 +90,21 @@
         this.baseBall.position.z = 0;
 
         //Clamp overall velocity
-        //console.log(this.baseBall.velocity.normalize());
         if (this.baseBall.velocity.norm() > 130) {
             this.baseBall.velocity.normalize();
             this.baseBall.velocity = this.baseBall.velocity.scale(130, this.baseBall.velocity);
-            //console.log(this.baseBall.velocity);
         }
 
-        if (Date.now() > time + 2000 && this.baseBall.position.y < -4.899 && this.baseBall.position.y > -5.1) {
-            //poinky.jump();
-            time = Date.now();
-        }
 
         //Physics
         this.midBall.applyForce(new CANNON.Vec3(2, 150, 0), this.midBall.position);
 
         this.baseBall.addEventListener("collide", function (event) {
-            //console.log(event.body.material);
-            if(event.body.material.name == "platformMaterial")
+            if (event.body.material.name == "platformMaterial"){
                 that.jump();
+            }
+            else if (event.body.material.name == "groundMaterial")
+                that.onDeath();
         });
 
 
