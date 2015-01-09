@@ -6,11 +6,17 @@
     <script src="js/stats.js"></script>
     <script src="js/cannon.js"></script>
     <script src="js/MarchingCubes.js"></script>
+
+    <script src="js/Tween.js"></script>
+    <script src="js/Sparks.js"></script>
+    <script src="js/CanvasShaders.js"></script>
+    <script src="js/classes/splash.js"></script>
+
     <script src="js/classes/platform.js"></script>
     <script src="js/classes/platform_manager.js"></script>
     <script src="js/classes/Poinky.js"></script>
-    <script type="x-shader/x-vertex" id="vertexShader">
 
+    <script type="x-shader/x-vertex" id="vertexShader">
         varying vec3 vNormal;
         varying vec4 vPosition;
         varying vec4 vOPosition;
@@ -25,8 +31,17 @@
         float x=LinearPosition.x;
         float y=LinearPosition.y;
         float z = LinearPosition.z;
-        if(abs(LinearPosition.x)>40.0){
-        LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        if(abs(LinearPosition.x)>100.0){
+            LinearPosition.y-=abs(LinearPosition.x)*9.0-40.0;
+        }
+        else if(abs(LinearPosition.x)>70.0){
+            LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
+        }
+        else if(abs(LinearPosition.x)>60.0){
+            LinearPosition.y-=abs(LinearPosition.x)*1.5-40.0;
+        }
+        else if(abs(LinearPosition.x)>40.0){
+            LinearPosition.y-=abs(LinearPosition.x)-40.0;
         }
         gl_Position = LinearPosition;
 
@@ -151,6 +166,34 @@
             padding: 0;
             margin: 0;
         }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 0px;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            color: white;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: black;
+        }
+
+        #menu {
+            position: absolute;
+            top: 10%;
+            left: 0px;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            color: white;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: black;
+            display: none;
+        }
+
+        #mute {
+        }
     </style>
 
 
@@ -162,7 +205,9 @@
     <audio id="music" controls="controls" style="display:none;" loop>
         <source src="sfx/Music.mp3" type="audio/mpeg" />
     </audio>
-    <div id="score" style="position:absolute;top:20px;left:100px;"></div>
+    <div id="score"></div>
+    <div id="menu"></div>
+    <div id="mute"></div>
     <script>
         "use strict";
         var three = THREE;
@@ -175,17 +220,16 @@
         var platformRenderingMaterial;
         var poinkyMaterial;
         var skySphereMaterial;
-        //Cannonjs 
+        //Cannonjs
         var world;
         //physics Materials
         var groundMaterial;
         var platformsMaterial;
-
         //Marching Cubes
         var resolution;
         var effect;
 
-        //poinky 
+        //poinky
         var poinky;
         //stats
         var stats;
@@ -198,8 +242,9 @@
         var manager;
         //controls
         var rightPressed;
-        var leftPressed ;
+        var leftPressed;
 
+        var menu;
 
         function init() {
             //stats
@@ -220,15 +265,16 @@
             rightPressed = false;
             leftPressed = false;
             startGame();
-        }
+            menu = document.getElementById("menu");
 
+        }
         function initCanon() {
             world = new CANNON.World();
             world.gravity.set(0, -200, 0);
             world.broadphase = new CANNON.NaiveBroadphase();
             world.solver.iterations = 10;
         }
- 
+
         function initPhysicsMaterials() {
             groundMaterial = new CANNON.Material("groundMaterial");
             platformsMaterial = new CANNON.Material("platformMaterial");
@@ -314,12 +360,28 @@
             music.play();
             //Create Poinky
             poinky = new Poinky(-9, 5, effect, world, jumpfx);
+            poinky.onJump = function () {
+                manager.scrollPlatforms();
+                
+                //create particles
+                (new Splash(poinky.baseBall.position.x, poinky.baseBall.position.y, poinky.baseBall.position.z, scene)).start();
+            };
+            poinky.onDeath = function () {
+                menu.style.display = "block";
+                score.style.display = "none";
+                menu.innerHTML = "your score is</br>" + poinky.score + "</br> <button type='button' onclick='reset();'>Restart</button>";
+            }
+
+        }
+        
+        function reset() {
+            menu.style.display = "none";
+            score.style.display = "block";
+            manager.reset();
+            poinky.reset();
+            location.reload();
         }
 
-        function reset() {
-            manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
-            startGame();
-        }
         function populateScene() {
             var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
             horizon.position.set(0, 0, 0);
@@ -334,6 +396,7 @@
             scene.add(camera);
             scene.add(skySphere);
         }
+
         initThree();
         LoadShaders();
         initCanon();
@@ -343,7 +406,7 @@
         var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
         ground.addShape(new CANNON.Plane());
         ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -45, 0);
+        ground.position.set(0, -85, 0);
         world.add(ground);
         // Adjust constraint equation parameters for ground/poinky contact
         var groundPoinkyContact = new CANNON.ContactMaterial(groundMaterial, poinky.material, {
@@ -369,9 +432,6 @@
         skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
         manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
 
-        poinky.onJump = function () {
-            manager.scrollPlatforms();
-        };
         populateScene();
         requestAnimationFrame(render);
         function update() {
@@ -406,6 +466,7 @@
                     leftPressed = true;
                     break;
             }
+
         };
 
         document.onkeyup = function (key) {
@@ -419,6 +480,6 @@
             }
         };
     </script>
-
+    
 </body>
 </html>
