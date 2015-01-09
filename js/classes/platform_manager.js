@@ -27,7 +27,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? 0 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
         var xPos = that.platforms.length == 0 ? 0 : Math.random() * (that.sceneWidth) - that.sceneWidth / 2;
-        that.platforms.push(new Platform(xPos, -10, zPos, 12, 0.5, 6.5, world, platformsMaterial, scene, that.renderMaterial));
+        that.platforms.push(new Platform(xPos, -10.5, zPos, 12, 0.5, 6.5, world, platformsMaterial, scene, that.renderMaterial));
     }
 
     function shouldCreate() {
@@ -37,7 +37,13 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     function shouldDestory() {
         return that.platforms[0].z > sceneDepth / 2;
     }
-
+    this.reset = function () {
+        for (var i = 0; i < this.platforms.length; i++) {
+            this.platforms[i].remove();
+        }
+        this.platforms = [];
+        createPlatform();
+    }
     function destoryPlatform() {
         //Optimize by moving the cube back instead of deleting it and creating a new one
         that.platforms[0].remove();
@@ -83,7 +89,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
         {
             var t = Date.now() - translationStart; //msec
             var easedTranslation = EaseInOutCubic(t*1.2, currentTranslation, targetTranslation - currentTranslation, 2000); //2 sec
-            console.log(startingTranslation, easedTranslation, targetTranslation);
+            //console.log(startingTranslation, easedTranslation, targetTranslation);
             for (var i = 0; i < this.platforms.length; i++) {
                 this.platforms[i].translate(-currentTranslation, 0, 0);
                 this.platforms[i].update();

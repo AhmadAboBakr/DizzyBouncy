@@ -151,6 +151,34 @@
             padding: 0;
             margin: 0;
         }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 0px;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            color: white;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: black;
+        }
+
+        #menu {
+            position: absolute;
+            top: 10%;
+            left: 0px;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            color: white;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: black;
+            display: none;
+        }
+
+        #mute {
+        }
     </style>
 
 
@@ -162,7 +190,9 @@
     <audio id="music" controls="controls" style="display:none;" loop>
         <source src="sfx/Music.mp3" type="audio/mpeg" />
     </audio>
-    <div id="score" style="position:absolute;top:20px;left:100px;"></div>
+    <div id="score"></div>
+    <div id="menu"></div>
+    <div id="mute"></div>
     <script>
         "use strict";
         var three = THREE;
@@ -175,17 +205,16 @@
         var platformRenderingMaterial;
         var poinkyMaterial;
         var skySphereMaterial;
-        //Cannonjs 
+        //Cannonjs
         var world;
         //physics Materials
         var groundMaterial;
         var platformsMaterial;
-
         //Marching Cubes
         var resolution;
         var effect;
 
-        //poinky 
+        //poinky
         var poinky;
         //stats
         var stats;
@@ -198,8 +227,9 @@
         var manager;
         //controls
         var rightPressed;
-        var leftPressed ;
+        var leftPressed;
 
+        var menu;
 
         function init() {
             //stats
@@ -220,15 +250,16 @@
             rightPressed = false;
             leftPressed = false;
             startGame();
-        }
+            menu = document.getElementById("menu");
 
+        }
         function initCanon() {
             world = new CANNON.World();
             world.gravity.set(0, -200, 0);
             world.broadphase = new CANNON.NaiveBroadphase();
             world.solver.iterations = 10;
         }
- 
+
         function initPhysicsMaterials() {
             groundMaterial = new CANNON.Material("groundMaterial");
             platformsMaterial = new CANNON.Material("platformMaterial");
@@ -314,11 +345,23 @@
             music.play();
             //Create Poinky
             poinky = new Poinky(-9, 5, effect, world, jumpfx);
-        }
+            poinky.onJump = function () {
+                manager.scrollPlatforms();
+            };
+            poinky.onDeath = function () {
+                menu.style.display = "block";
+                score.style.display = "none";
+                menu.innerHTML = "your score is</br>" + poinky.score + "</br> <button type='button' onclick='reset();'>Restart</button>";
+            }
 
+        }
+        
         function reset() {
-            manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
-            startGame();
+            menu.style.display = "none";
+            score.style.display = "block";
+            manager.reset();
+            poinky.reset();
+            location.reload();
         }
         function populateScene() {
             var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
@@ -369,9 +412,6 @@
         skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
         manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
 
-        poinky.onJump = function () {
-            manager.scrollPlatforms();
-        };
         populateScene();
         requestAnimationFrame(render);
         function update() {
@@ -406,6 +446,7 @@
                     leftPressed = true;
                     break;
             }
+
         };
 
         document.onkeyup = function (key) {
@@ -419,6 +460,6 @@
             }
         };
     </script>
-
+    
 </body>
 </html>
