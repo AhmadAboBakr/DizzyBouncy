@@ -6,11 +6,17 @@
     <script src="js/stats.js"></script>
     <script src="js/cannon.js"></script>
     <script src="js/MarchingCubes.js"></script>
+
+    <script src="js/Tween.js"></script>
+    <script src="js/Sparks.js"></script>
+    <script src="js/CanvasShaders.js"></script>
+    <script src="js/classes/splash.js"></script>
+
     <script src="js/classes/platform.js"></script>
     <script src="js/classes/platform_manager.js"></script>
     <script src="js/classes/Poinky.js"></script>
-    <script type="x-shader/x-vertex" id="vertexShader">
 
+    <script type="x-shader/x-vertex" id="vertexShader">
         varying vec3 vNormal;
         varying vec4 vPosition;
         varying vec4 vOPosition;
@@ -356,6 +362,9 @@
             poinky = new Poinky(-9, 5, effect, world, jumpfx);
             poinky.onJump = function () {
                 manager.scrollPlatforms();
+                
+                //create particles
+                (new Splash(poinky.baseBall.position.x, poinky.baseBall.position.y, poinky.baseBall.position.z, scene)).start();
             };
             poinky.onDeath = function () {
                 menu.style.display = "block";
@@ -372,6 +381,7 @@
             poinky.reset();
             location.reload();
         }
+
         function populateScene() {
             var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
             horizon.position.set(0, 0, 0);
@@ -386,6 +396,7 @@
             scene.add(camera);
             scene.add(skySphere);
         }
+
         initThree();
         LoadShaders();
         initCanon();
@@ -395,7 +406,7 @@
         var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
         ground.addShape(new CANNON.Plane());
         ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -45, 0);
+        ground.position.set(0, -85, 0);
         world.add(ground);
         // Adjust constraint equation parameters for ground/poinky contact
         var groundPoinkyContact = new CANNON.ContactMaterial(groundMaterial, poinky.material, {

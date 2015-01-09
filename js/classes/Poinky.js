@@ -48,14 +48,14 @@
     var flipper = -2100; // :D
 
     this.jump = function () {
-        if (!that.jumping) {
+        if (!this.jumping) {
             this.score++;
             this.baseBall.velocity.y = 0;
             this.baseBall.velocity.x = 0;
             this.baseBall.velocity.z = 0;
             this.jumpfx.play();
-            that.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), that.baseBall.position);
-            that.jumping = true;
+            this.baseBall.applyImpulse(new CANNON.Vec3(flipper = -flipper, 800, 0), this.baseBall.position);
+            this.jumping = true;
 
             if (this.onJump) {
                 if (!this.firstIteration)
@@ -90,7 +90,6 @@
         this.baseBall.position.z = 0;
 
         //Clamp overall velocity
-        //console.log(this.baseBall.velocity.normalize());
         if (this.baseBall.velocity.norm() > 130) {
             this.baseBall.velocity.normalize();
             this.baseBall.velocity = this.baseBall.velocity.scale(130, this.baseBall.velocity);

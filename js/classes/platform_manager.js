@@ -27,7 +27,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? 0 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
 		that.xstep+= 100;
-		var xPos = that.platforms.length == 0 ? 0 : Math.sin ( Math.random() *that.xstep )* that.platforms[that.platforms.length-1].x  +  (that.sceneWidth) - that.sceneWidth / 2;
+		var xPos = that.platforms.length == 0 ? 0 : 0.6 *  Math.sin ( Math.random() *that.xstep )* that.platforms[that.platforms.length-1].x  +  (that.sceneWidth) - that.sceneWidth / 2;
 		
         that.platforms.push(new Platform(xPos, -10, zPos, 12, 0.5, 6.5, world, platformsMaterial, scene, that.renderMaterial));
     }
@@ -85,13 +85,11 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
             }
 
         //Apply player movement
-        //console.log(Math.abs(targetTranslation - currentTranslation));
-        //console.log(startingTranslation);
         if(Math.abs(targetTranslation-currentTranslation) > 0.1)
         {
             var t = Date.now() - translationStart; //msec
             var easedTranslation = EaseInOutCubic(t*1.2, currentTranslation, targetTranslation - currentTranslation, 2000); //2 sec
-            //console.log(startingTranslation, easedTranslation, targetTranslation);
+
             for (var i = 0; i < this.platforms.length; i++) {
                 this.platforms[i].translate(-currentTranslation, 0, 0);
                 this.platforms[i].update();
