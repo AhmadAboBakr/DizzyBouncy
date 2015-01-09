@@ -32,10 +32,10 @@
         float y=LinearPosition.y;
         float z = LinearPosition.z;
         if(abs(LinearPosition.x)>100.0){
-        LinearPosition.y-=abs(LinearPosition.x)*9.0-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
         }
         else if(abs(LinearPosition.x)>70.0){
-        LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)*2.5-40.0;
         }
         else if(abs(LinearPosition.x)>60.0){
         LinearPosition.y-=abs(LinearPosition.x)*1.2-40.0;
@@ -385,7 +385,7 @@
         function populateScene() {
             var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
             horizon.position.set(0, 0, 0);
-            horizon.scale.set(100, 20, 300);
+            horizon.scale.set(400, 20, 300);
             horizon.addPlaneY(2, 12);
             var horizon = new three.Mesh(new three.BoxGeometry(1, 1, 1, 30), poinkyMaterial);
             horizon.scale.set(100, 3, 400);
