@@ -74,8 +74,18 @@
     //this.world.addConstraint(this.hinge);
     var baseBallPosition, midBallPosition, topBallPosition;
     this.update = function () {
+
+        //Clamp z axis
         this.baseBall.velocity.z = 0;
         this.baseBall.position.z = 0;
+
+        //Clamp overall velocity
+        //console.log(this.baseBall.velocity.normalize());
+        if (this.baseBall.velocity.norm() > 130) {
+            this.baseBall.velocity.normalize();
+            this.baseBall.velocity = this.baseBall.velocity.scale(130, this.baseBall.velocity);
+            console.log(this.baseBall.velocity);
+        }
 
         if (Date.now() > time + 2000 && this.baseBall.position.y < -4.899 && this.baseBall.position.y > -5.1) {
             //poinky.jump();

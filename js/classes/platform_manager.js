@@ -15,7 +15,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     //Globals
     this.scrollSpeed = 0.9;
     this.sidewaySpeed = 30;
-    this.platformsGap = 20;
+    this.platformsGap = 30;
 
     //Platforms array
     this.platforms = [];
@@ -54,20 +54,57 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
             destoryPlatform();
     }
 
+    var translationStart = Date.now();
+    var targetTranslation = 0;
+    var currentTranslation = 0;
+    var startingTranslation = 0;
+
+    function EaseInOutCubic(t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t + 2) + b;
+    };
+
     this.update = function () {
         updatePlatforms();
+
+        //Scroll until next platform reaches poinky
         if(this.platforms[nextPlatformIndex].z < 0)
             for (var i = 0; i < this.platforms.length; i++) {
                 this.platforms[i].translate(0, 0, this.scrollSpeed);
                 this.platforms[i].update();
             }
-    }
-    this.movePlatforms = function (x) {
-        for (var i = 0; i < this.platforms.length; i++) {
-            this.platforms[i].translate(x, 0, 0);
-            this.platforms[i].update();
-        }
 
+        //Apply player movement
+        //console.log(Math.abs(targetTranslation - currentTranslation));
+        //console.log(startingTranslation);
+        if(Math.abs(targetTranslation-currentTranslation) > 0.1)
+        {
+            var t = Date.now() - translationStart; //msec
+            var easedTranslation = EaseInOutCubic(t*1.2, currentTranslation, targetTranslation - currentTranslation, 2000); //2 sec
+            console.log(startingTranslation, easedTranslation, targetTranslation);
+            for (var i = 0; i < this.platforms.length; i++) {
+                this.platforms[i].translate(-currentTranslation, 0, 0);
+                this.platforms[i].update();
+                this.platforms[i].translate(easedTranslation, 0, 0);
+                this.platforms[i].update();
+            }
+
+            currentTranslation = easedTranslation;
+        }
+    }
+
+    this.movePlatforms = function (x) {
+        if (Date.now() - translationStart > 500)
+            translationStart = Date.now() - 500;
+
+        startingTranslation = currentTranslation;
+        targetTranslation += x;
+        //for (var i = 0; i < this.platforms.length; i++) {
+        //    this.platforms[i].translate(x, 0, 0);
+        //    this.platforms[i].update();
+        //}
     }
     this.draw = function () {
         for (var i = 0; i < this.platforms.length; i++)
