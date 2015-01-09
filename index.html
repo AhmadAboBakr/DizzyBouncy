@@ -379,9 +379,8 @@
 
         poinky.onJump = function () {
             manager.scrollPlatforms();
-
             //create particles
-            (new Splash(poinky.x, poinky.y - 3, poinky.z, scene)).start();
+            (new Splash(poinky.baseBall.position.x, poinky.baseBall.position.y, poinky.baseBall.position.z, scene)).start();
         };
         populateScene();
         requestAnimationFrame(render);
