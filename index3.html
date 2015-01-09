@@ -1,16 +1,14 @@
 
 <html>
 <head>
-    <title>Poinky Test1</title>
+    <title>Poinky The Stupid Jelly Ball</title>
     <script src="js/three.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/cannon.js"></script>
-    <script src="fonts/helvetiker_bold.typeface.js"></script>
-    <script src="fonts/helvetiker_regular.typeface.js"></script>
     <script src="js/MarchingCubes.js"></script>
-    <script src="js/Poinky.js"></script>
     <script src="js/classes/platform.js"></script>
     <script src="js/classes/platform_manager.js"></script>
+    <script src="js/Poinky.js"></script>    
     <script type="x-shader/x-vertex" id="vertexShader">
 
         varying vec3 vNormal;
@@ -23,7 +21,14 @@
         void main() {
 
         vOPosition = modelViewMatrix * vec4( position, 1.0 );
-        gl_Position = projectionMatrix * vOPosition;
+        vec4 LinearPosition=projectionMatrix * vOPosition;
+        float x=LinearPosition.x;
+        float y=LinearPosition.y;
+        float z = LinearPosition.z;
+        if(abs(LinearPosition.x)>40.0){
+            LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        }
+        gl_Position = LinearPosition;
 
         vU = normalize( vec3( modelViewMatrix * vec4( position, 1.0 ) ) );
 
@@ -156,7 +161,16 @@
 
 </head>
 <body>
+    <audio id="jumpfx" style="display:none;">
+        <source src="sfx/boing.wav" />
+    </audio>
+    <audio id="music" controls="controls" style="display:none;" loop>
+        <source src="sfx/Music.mp3" type="audio/mpeg" />
+    </audio>
+    <div id="score" style="position:absolute;top:20px;left:100px;"></div>
     <script>
+        "use strict";
+
         var three = THREE;
 
         var timeStep = 1.0 / 60.0; // seconds
@@ -165,7 +179,7 @@
         var scene = new THREE.Scene();
 
         //Cannonjs init
-        world = new CANNON.World();
+        var world = new CANNON.World();
         world.gravity.set(0, -200, 0);
         world.broadphase = new CANNON.NaiveBroadphase();
         world.solver.iterations = 10;
@@ -177,9 +191,9 @@
         document.body.appendChild(renderer.domElement);
 
         var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 3000);
-        camera.position.set(0, 50, 60);
+        camera.position.set(0, 45, 60);
         camera.lookAt(scene.position);
-        
+
         // Physics World
         // Materials
         var groundMaterial = new CANNON.Material("groundMaterial");
@@ -187,16 +201,11 @@
         var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
         ground.addShape(new CANNON.Plane());
         ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -15, 0);
+        ground.position.set(0, -60, 0);
         world.add(ground);
 
-        //effect
-        /*
-            increasing it will dramatically increase the marching cube smothness
-            but will dramatically decrease perfromance
-        */
-        material = new THREE.ShaderMaterial({
-
+        //platform material
+        var platformRenderingMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 textureMap: { type: 't', value: null },
                 normalMap: { type: 't', value: null },
@@ -209,19 +218,49 @@
             vertexShader: document.getElementById('vertexShader').textContent,
             fragmentShader: document.getElementById('fragmentShader').textContent,
             side: THREE.FrontSide
-
         });
-        material.uniforms.normalScale.value = .5;
-        material.uniforms.texScale.value = 10;
-        material.uniforms.useSSS.value = .15;
-        material.uniforms.useScreen.value = .3;
+        platformRenderingMaterial.uniforms.normalScale.value = .5;
+        platformRenderingMaterial.uniforms.texScale.value = 10;
+        platformRenderingMaterial.uniforms.useSSS.value = .15;
+        platformRenderingMaterial.uniforms.useScreen.value = .3;
+        platformRenderingMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap1.jpg');
+        platformRenderingMaterial.uniforms.textureMap.value.wrapS = platformRenderingMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
+        //platformRenderingMaterial.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('723-normal.jpg');
+        //platformRenderingMaterial.uniforms.normalMap.value.wrapS = platformRenderingMaterial.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+
+        //poinky Material
+        var poinkyMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                textureMap: { type: 't', value: null },
+                normalMap: { type: 't', value: null },
+                normalScale: { type: 'f', value: 1 },
+                texScale: { type: 'f', value: 5 },
+                useSSS: { type: 'f', value: 1 },
+                useScreen: { type: 'f', value: 0 },
+                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
+            },
+            vertexShader: document.getElementById('vertexShader').textContent,
+            fragmentShader: document.getElementById('fragmentShader').textContent,
+            side: THREE.FrontSide
+        });
+        poinkyMaterial.uniforms.normalScale.value = .5;
+        poinkyMaterial.uniforms.texScale.value = 10;
+        poinkyMaterial.uniforms.useSSS.value = .15;
+        poinkyMaterial.uniforms.useScreen.value = .3;
 
 
-        material.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
-        material.uniforms.textureMap.value.wrapS = material.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
+        poinkyMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
+        poinkyMaterial.uniforms.textureMap.value.wrapS = poinkyMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
-        resolution = 35;
-        effect = new THREE.MarchingCubes(resolution, material, true, true);
+        //effect
+        /*
+            @reselution
+            increasing it will dramatically increase the marching cube smothness
+            but will dramatically decrease perfromance
+        */
+
+        var resolution = 35;
+        var effect = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
         effect.position.set(0, 0, 0);
         effect.scale.set(20, 20, 20);
         effect.isolation = 60;
@@ -230,7 +269,10 @@
 
 
         //Create Poinky
-        var poinky = new Poinky(-9, 5, effect, world);
+        var jumpfx = document.getElementById("jumpfx");
+        
+        var poinky = new Poinky(-9, 5, effect, world, jumpfx);
+
 
         // Adjust constraint equation parameters for ground/poinky contact
         var groundPoinkyContact = new CANNON.ContactMaterial(groundMaterial, poinky.material, {
@@ -242,7 +284,50 @@
             frictionEquationRegularizationTime: 3,
         });
         world.addContactMaterial(groundPoinkyContact);
+        
 
+        var stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '1px';
+        stats.domElement.style.zIndex = 100;
+        document.body.appendChild(stats.domElement);
+
+        //sky sphere
+        var skySphereMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
+                noise: { type: 'f', value: .04 },
+                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
+            },
+            vertexShader: document.getElementById('sphere-vs').textContent,
+            fragmentShader: document.getElementById('sphere-fs').textContent,
+            side: THREE.DoubleSide
+        });
+        skySphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+        var skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
+
+        var horizon = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
+        horizon.position.set(0, 0, 0);
+        horizon.scale.set(100, 20, 300);
+        horizon.addPlaneY(2, 12);
+        var platformsMaterial = new CANNON.Material("platformMaterial");
+        var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
+            friction: 1,
+            restitution: 0.4,
+            contactEquationStiffness: 1e8,
+            contactEquationRegularizationTime: 3,
+            frictionEquationStiffness: 1e13,
+            frictionEquationRegularizationTime: 3,
+        });
+        world.addContactMaterial(platformPoinkyContact);
+
+
+
+        var manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
+
+        poinky.onJump = function () {
+            manager.scrollPlatforms();
+        };
         var light = new THREE.DirectionalLight(0xFFFFFF);
         light.position.set(20, 40, 15);
         light.target.position.copy(scene.position);
@@ -261,73 +346,66 @@
         var ambient = new three.AmbientLight(0x222222);
         scene.add(ambient);
 
-        var platformsMaterial = new CANNON.Material("platformMaterial");
-        var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
-            friction: 1,
-            restitution: 0.4,
-            contactEquationStiffness: 1e8,
-            contactEquationRegularizationTime: 3,
-            frictionEquationStiffness: 1e13,
-            frictionEquationRegularizationTime: 3,
-        });
-        world.addContactMaterial(platformPoinkyContact);
-
-        var platformManager = new PlatformManager(50, 100, world, platformPoinkyContact, scene);
-		
-		// moving platform
-		document.onkeydown = function(key)
-		{
-		  switch (key.keyCode) {
-				case 39:
-                     platformManager.movePlatforms(15);
-                    break;
-				case 37:
-                     platformManager.movePlatforms(-15);
-                    break;
-            }
-		};
-
-        var stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.top = '1px';
-        stats.domElement.style.zIndex = 100;
-        document.body.appendChild(stats.domElement);
-
-        var horizon = new THREE.MarchingCubes(resolution, material, true, true);
-        horizon.position.set(0, 0, 0);
-        horizon.scale.set(45, 20, 300);
-        horizon.addPlaneY(2, 12);
-        horizon.resolution = 5;
-
-        //var horizon = new three.Mesh(new three.CubeGeometry(50, .5, 1000), material);
-        //horizon.position.y = -12.1709;
-
         //Fill scene
         scene.add(horizon);
         scene.add(effect);
         scene.add(camera);
-
+        scene.add(skySphere);
+        
         //Start
+        var score = document.getElementById("score");
         requestAnimationFrame(render);
+        var music = document.getElementById("music");
+        music.play();
 
-        setInterval(update, timeStep * 1000);
+        var rightPressed = false;
+        var leftPressed = false;
         function update() {
+            if (rightPressed)
+                manager.movePlatforms(-2.2);
+            if (leftPressed)
+                manager.movePlatforms(2.2);
             poinky.update();
-            platformManager.update();
+            if (poinky.score != score.innerText) {
+                score.innerText = poinky.score;
+            }
             world.step(timeStep);
             stats.update();
+            manager.update();           
         };
 
         function render() {
             requestAnimationFrame(render);
+            update();
             effect.reset();
-            effect.addPlaneY(3.0, 12);
+            effect.addPlaneY(3.5, 12);
             poinky.draw();
-            platformManager.draw();
+            manager.draw();
             renderer.render(scene, camera);
         };
 
+        document.onkeydown = function (key) {
+            switch (key.keyCode) {
+                case 39:
+                    rightPressed = true;
+                    break;
+                case 37:
+                    leftPressed = true;
+                    break;
+            }
+        };
 
+        document.onkeyup = function (key) {
+            switch (key.keyCode) {
+                case 39:
+                    rightPressed = false;
+                    break;
+                case 37:
+                    leftPressed = false;
+                    break;
+            }
+        };
     </script>
+
 </body>
 </html>
