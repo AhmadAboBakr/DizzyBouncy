@@ -26,7 +26,7 @@
         float y=LinearPosition.y;
         float z = LinearPosition.z;
         if(abs(LinearPosition.x)>40.0){
-            LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)-40.0;
         }
         gl_Position = LinearPosition;
 
@@ -112,7 +112,6 @@
         }
 
     </script>
-
     <script type="x-shader/x-vertex" id="sphere-vs">
 
         void main() {
@@ -147,8 +146,6 @@
         }
 
     </script>
-
-
     <style>
         body, html {
             padding: 0;
@@ -168,21 +165,75 @@
     <div id="score" style="position:absolute;top:20px;left:100px;"></div>
     <script>
         "use strict";
-
-        var three =THREE;
-
-
+        var three = THREE;
         var timeStep = 1.0 / 60.0; // seconds
-
         //ThreeJS
         var scene;
         var renderer;
         var camera;
-        //Cannonjs init
-        var world = new CANNON.World();
-        world.gravity.set(0, -200, 0);
-        world.broadphase = new CANNON.NaiveBroadphase();
-        world.solver.iterations = 10;
+        //Rendering Materials
+        var platformRenderingMaterial;
+        var poinkyMaterial;
+        var skySphereMaterial;
+        //Cannonjs 
+        var world;
+        //physics Materials
+        var groundMaterial;
+        var platformsMaterial;
+
+        //Marching Cubes
+        var resolution;
+        var effect;
+
+        //poinky 
+        var poinky;
+        //stats
+        var stats;
+        //sound effect
+        var jumpfx;
+        var music;
+        //skySphere
+        var skySphere;
+        //platform Manager
+        var manager;
+        //controls
+        var rightPressed;
+        var leftPressed ;
+
+
+        function init() {
+            //stats
+            stats = new Stats();
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '1px';
+            stats.domElement.style.zIndex = 100;
+            document.body.appendChild(stats.domElement);
+            //Sound Effect
+            jumpfx = document.getElementById("jumpfx");
+            music = document.getElementById("music");
+            //marching Cubes
+            resolution = 25;
+            effect = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
+            effect.position.set(0, 0, 0);
+            effect.scale.set(20, 20, 20);
+            effect.isolation = 60;
+            rightPressed = false;
+            leftPressed = false;
+            startGame();
+        }
+
+        function initCanon() {
+            world = new CANNON.World();
+            world.gravity.set(0, -200, 0);
+            world.broadphase = new CANNON.NaiveBroadphase();
+            world.solver.iterations = 10;
+        }
+ 
+        function initPhysicsMaterials() {
+            groundMaterial = new CANNON.Material("groundMaterial");
+            platformsMaterial = new CANNON.Material("platformMaterial");
+        }
+
         function initThree() {
             scene = new THREE.Scene();
             renderer = new three.WebGLRenderer({ antialias: true });
@@ -194,21 +245,8 @@
             camera.position.set(0, 45, 60);
             camera.lookAt(scene.position);
         }
-        initThree();
 
-        // Physics World
-        // Materials
-        var groundMaterial = new CANNON.Material("groundMaterial");
-
-        var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
-        ground.addShape(new CANNON.Plane());
-        ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-        ground.position.set(0, -60, 0);
-        world.add(ground);
-
-        //platform material
-        var platformRenderingMaterial;
-        var poinkyMaterial;
+        //this function should be changed to geth the shader from external files
         function LoadShaders() {
             platformRenderingMaterial = new THREE.ShaderMaterial({
                 uniforms: {
@@ -255,32 +293,58 @@
             poinkyMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
             poinkyMaterial.uniforms.textureMap.value.wrapS = poinkyMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
+            //sky sphere
+            skySphereMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
+                    noise: { type: 'f', value: .04 },
+                    color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
+                },
+                vertexShader: document.getElementById('sphere-vs').textContent,
+                fragmentShader: document.getElementById('sphere-fs').textContent,
+                side: THREE.DoubleSide
+            });
+            skySphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+
         }
+
+        function startGame() {
+
+            music.pause();
+            music.play();
+            //Create Poinky
+            poinky = new Poinky(-9, 5, effect, world, jumpfx);
+        }
+
+        function reset() {
+            manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
+            startGame();
+        }
+        function populateScene() {
+            var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
+            horizon.position.set(0, 0, 0);
+            horizon.scale.set(100, 20, 300);
+            horizon.addPlaneY(2, 12);
+            var horizon = new three.Mesh(new three.BoxGeometry(1, 1, 1, 30), poinkyMaterial);
+            horizon.scale.set(100, 3, 400);
+            horizon.position.y = -12;
+            //Fill scene
+            scene.add(horizon);
+            scene.add(effect);
+            scene.add(camera);
+            scene.add(skySphere);
+        }
+        initThree();
         LoadShaders();
-        //poinky Material
+        initCanon();
+        initPhysicsMaterials();
+        init();
 
-        //effect
-        /*
-            @reselution
-            increasing it will dramatically increase the marching cube smothness
-            but will dramatically decrease perfromance
-        */
-
-        var resolution = 35;
-        var effect = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
-        effect.position.set(0, 0, 0);
-        effect.scale.set(20, 20, 20);
-        effect.isolation = 60;
-
-        //endeffect
-
-
-        //Create Poinky
-        var jumpfx = document.getElementById("jumpfx");
-        
-        var poinky = new Poinky(-9, 5, effect, world, jumpfx);
-
-
+        var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+        ground.addShape(new CANNON.Plane());
+        ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+        ground.position.set(0, -45, 0);
+        world.add(ground);
         // Adjust constraint equation parameters for ground/poinky contact
         var groundPoinkyContact = new CANNON.ContactMaterial(groundMaterial, poinky.material, {
             friction: 1,
@@ -291,29 +355,8 @@
             frictionEquationRegularizationTime: 3,
         });
         world.addContactMaterial(groundPoinkyContact);
-        
 
-        var stats = new Stats();
-        stats.domElement.style.position = 'absolute';
-        stats.domElement.style.top = '1px';
-        stats.domElement.style.zIndex = 100;
-        document.body.appendChild(stats.domElement);
-
-        //sky sphere
-        var skySphereMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                resolution: { type: 'v2', value: new THREE.Vector2(0, 0) },
-                noise: { type: 'f', value: .04 },
-                color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
-            },
-            vertexShader: document.getElementById('sphere-vs').textContent,
-            fragmentShader: document.getElementById('sphere-fs').textContent,
-            side: THREE.DoubleSide
-        });
-        skySphereMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-        var skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
-
-        var platformsMaterial = new CANNON.Material("platformMaterial");
+        // Adjust constraint equation parameters for paltform/poinky contact
         var platformPoinkyContact = new CANNON.ContactMaterial(platformsMaterial, poinky.material, {
             friction: 1,
             restitution: 0.4,
@@ -323,55 +366,14 @@
             frictionEquationRegularizationTime: 3,
         });
         world.addContactMaterial(platformPoinkyContact);
-
-
-
-        var manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
+        skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
+        manager = new PlatformManager(100, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
 
         poinky.onJump = function () {
             manager.scrollPlatforms();
         };
-        var light = new THREE.DirectionalLight(0xFFFFFF);
-        light.position.set(20, 40, 15);
-        light.target.position.copy(scene.position);
-        light.castShadow = true;
-        light.shadowCameraLeft = -60;
-        light.shadowCameraTop = -60;
-        light.shadowCameraRight = 60;
-        light.shadowCameraBottom = 60;
-        light.shadowCameraNear = 20;
-        light.shadowCameraFar = 200;
-        light.shadowBias = -.0001
-        light.shadowMapWidth = light.shadowMapHeight = 2048;
-        light.shadowDarkness = .7;
-        scene.add(light);
-
-        var ambient = new three.AmbientLight(0x222222);
-        scene.add(ambient);
-        //var horizon = new THREE.MarchingCubes(resolution, poinkyMaterial, true, true);
-        //horizon.position.set(0, 0, 0);
-        //horizon.scale.set(100, 20, 300);
-        //horizon.addPlaneY(2, 12);
-        var horizon = new three.Mesh(new three.BoxGeometry(1, 1, 1, 30), poinkyMaterial);
-        horizon.scale.set(100,3,400);
-        horizon.position.y = -12;
-        //Fill scene
-        scene.add(horizon);
-        scene.add(effect);
-        scene.add(camera);
-        scene.add(skySphere);
-        
-        //Start
-        var score = document.getElementById("score");
+        populateScene();
         requestAnimationFrame(render);
-        var music = document.getElementById("music");
-        music.play();
-        function init(){}
-        function initCanon() { }
-        function startGame(){}
-
-        var rightPressed = false;
-        var leftPressed = false;
         function update() {
             if (rightPressed)
                 manager.movePlatforms(-2.2);
@@ -383,9 +385,8 @@
             }
             world.step(timeStep);
             stats.update();
-            manager.update();           
+            manager.update();
         };
-
         function render() {
             requestAnimationFrame(render);
             update();
