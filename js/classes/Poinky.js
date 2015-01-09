@@ -74,7 +74,6 @@
     //this.world.addConstraint(this.hinge);
     var baseBallPosition, midBallPosition, topBallPosition;
     this.update = function () {
-        console.log(this.midBall.velocity);
         this.baseBall.velocity.z = 0;
         this.baseBall.position.z = 0;
 
