@@ -25,8 +25,17 @@
         float x=LinearPosition.x;
         float y=LinearPosition.y;
         float z = LinearPosition.z;
-        if(abs(LinearPosition.x)>40.0){
-        LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        if(abs(LinearPosition.x)>100.0){
+            LinearPosition.y-=abs(LinearPosition.x)*9.0-40.0;
+        }
+        else if(abs(LinearPosition.x)>70.0){
+            LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
+        }
+        else if(abs(LinearPosition.x)>60.0){
+            LinearPosition.y-=abs(LinearPosition.x)*1.5-40.0;
+        }
+        else if(abs(LinearPosition.x)>40.0){
+            LinearPosition.y-=abs(LinearPosition.x)-40.0;
         }
         gl_Position = LinearPosition;
 
