@@ -26,7 +26,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
     function createPlatform() {
         //calculate position from gap
         var zPos = that.platforms.length == 0 ? 0 : that.platforms[that.platforms.length - 1].z - that.platformsGap;
-		that.xstep+= 100;
+		that.xstep+= 10;
 
 		//var xPos = that.platforms.length == 0 ? 0 : Math.sin ( Math.random() *that.xstep )* that.platforms[that.platforms.length-1].x  +  (that.sceneWidth) - that.sceneWidth / 2;
 		if (that.platforms.length == 0)
@@ -36,7 +36,7 @@ function PlatformManager(sceneWidth, sceneDepth, world, PhysicsMaterial, scene, 
 		else
 		{
 		  xPos = Math.sin ( Math.random() *that.xstep )* that.platforms[that.platforms.length-1].x  +  (that.sceneWidth) - that.sceneWidth / 2;
-		  if(Math.abs(xPos - that.platforms[that.platforms.length-1].x) > 130)
+		  if(Math.abs(xPos - that.platforms[that.platforms.length-1].x) > 120)
 		    xPos = that.platforms[that.platforms.length-1].x - 50;
 		}
 		
