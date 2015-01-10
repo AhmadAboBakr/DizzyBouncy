@@ -23,8 +23,10 @@
 
     //Create display
     this.material = this.renderMaterial;
-    this.geometry = new THREE.BoxGeometry(this.width * 2, this.height * 2, this.depth * 2,7);
+    this.geometry = new THREE.IcosahedronGeometry(.6, 3);
     this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.scale.set(this.width * 2, this.height * 2, this.depth * 2);
+    this.mesh.scale.set(this.width * 2, this.height * 2, this.depth * 2);
     this.scene.add(this.mesh);
 
     this.translate = function(x, y, z) {

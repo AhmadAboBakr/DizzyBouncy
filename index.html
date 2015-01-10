@@ -32,16 +32,16 @@
         float y=LinearPosition.y;
         float z = LinearPosition.z;
         if(abs(LinearPosition.x)>100.0){
-        LinearPosition.y-=abs(LinearPosition.x)*3.0-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)*2.5-250.0;
         }
-        else if(abs(LinearPosition.x)>70.0){
-        LinearPosition.y-=abs(LinearPosition.x)*2.5-40.0;
-        }
-        else if(abs(LinearPosition.x)>60.0){
-        LinearPosition.y-=abs(LinearPosition.x)*1.2-40.0;
+        if(abs(LinearPosition.x)>80.0){
+        LinearPosition.y-=abs(LinearPosition.x)*2.0-111.01;
         }
         else if(abs(LinearPosition.x)>40.0){
-        LinearPosition.y-=abs(LinearPosition.x)-40.0;
+        LinearPosition.y-=abs(LinearPosition.x)-30.0;
+        }
+        else if(abs(LinearPosition.x)>20.0){
+        LinearPosition.y-=abs(LinearPosition.x)*.5-10.0;
         }
         gl_Position = LinearPosition;
 
@@ -296,13 +296,13 @@
         function LoadShaders() {
             platformRenderingMaterial = new THREE.ShaderMaterial({
                 uniforms: {
-                    textureMap: { type: 't', value: THREE.ImageUtils.loadTexture('matcap1.jpg') },
+                    textureMap: { type: 't', value: THREE.ImageUtils.loadTexture('images/platforms.jpg') },
                     normalMap: { type: 't', value: null },
                     normalScale: { type: 'f', value: 1 },
                     texScale: { type: 'f', value: 5 },
                     useSSS: { type: 'f', value: 1 },
                     useScreen: { type: 'f', value: 0 },
-                    color: { type: 'c', value: new THREE.Color(18. / 0., 72. / 0., 85. / 255.) }
+                    color: { type: 'c', value: new THREE.Color(18. / 255., 72. / 255., 85. / 255.) }
                 },
                 vertexShader: document.getElementById('vertexShader').textContent,
                 fragmentShader: document.getElementById('fragmentShader').textContent,
@@ -313,8 +313,8 @@
             platformRenderingMaterial.uniforms.useSSS.value = .15;
             platformRenderingMaterial.uniforms.useScreen.value = .3;
             platformRenderingMaterial.uniforms.textureMap.value.wrapS = platformRenderingMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
-            //platformRenderingMaterial.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('normals.jpg');
-            //platformRenderingMaterial.uniforms.normalMap.value.wrapS = platformRenderingMaterial.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+            platformRenderingMaterial.uniforms.normalMap.value = THREE.ImageUtils.loadTexture('images/normal.jpg');
+            platformRenderingMaterial.uniforms.normalMap.value.wrapS = platformRenderingMaterial.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
 
             poinkyMaterial = new THREE.ShaderMaterial({
                 uniforms: {
@@ -336,7 +336,7 @@
             poinkyMaterial.uniforms.useScreen.value = .3;
 
 
-            poinkyMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('matcap2.jpg');
+            poinkyMaterial.uniforms.textureMap.value = THREE.ImageUtils.loadTexture('images/poinky.jpg');
             poinkyMaterial.uniforms.textureMap.value.wrapS = poinkyMaterial.uniforms.textureMap.value.wrapT = THREE.ClampToEdgeWrapping;
 
             //sky sphere
@@ -383,12 +383,12 @@
         }
 
         function populateScene() {
-            var horizon = new THREE.MarchingCubes(24, poinkyMaterial, true, true);
-            horizon.position.set(0, 0, 0);
-            horizon.scale.set(400, 20, 300);
-            horizon.addPlaneY(2, 12);
+            //var horizon = new THREE.MarchingCubes(24, new THREE.MeshBasicMaterial(), true, true);
+            //horizon.position.set(0, 0, 0);
+            //horizon.scale.set(400, 20, 300);
+            //horizon.addPlaneY(2, 12);
             var horizon = new three.Mesh(new three.BoxGeometry(1, 1, 1, 30), poinkyMaterial);
-            horizon.scale.set(100, 3, 400);
+            horizon.scale.set(200, 3, 400);
             horizon.position.y = -12;
             //Fill scene
             scene.add(horizon);
@@ -430,7 +430,7 @@
         });
         world.addContactMaterial(platformPoinkyContact);
         skySphere = new THREE.Mesh(new THREE.IcosahedronGeometry(3000, 1), skySphereMaterial);
-        manager = new PlatformManager(50, 350, world, platformPoinkyContact, scene, platformRenderingMaterial);
+        manager = new PlatformManager(50, 350, world, platformPoinkyContact, scene, poinkyMaterial);
 
         populateScene();
         requestAnimationFrame(render);
@@ -446,7 +446,6 @@
             if (parseInt(stats.domElement.innerText) < 50) highFrameRate = false;
             world.step(timeStep);
             stats.update();
-            console.log(stats);
             manager.update();
         };
         function render() {
@@ -461,10 +460,10 @@
 
         document.onkeydown = function (key) {
             switch (key.keyCode) {
-                case 39:
+                case 37:
                     rightPressed = true;
                     break;
-                case 37:
+                case 39:
                     leftPressed = true;
                     break;
             }
@@ -473,10 +472,10 @@
 
         document.onkeyup = function (key) {
             switch (key.keyCode) {
-                case 39:
+                case 37:
                     rightPressed = false;
                     break;
-                case 37:
+                case 39:
                     leftPressed = false;
                     break;
             }
